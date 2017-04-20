@@ -183,7 +183,7 @@ $$ p(z_{nl}|\text{rest}) = \sigma\left[\lambda \tilde{z}_{nl} \sum\limits_d \til
 - Input: 50 digits with 70% missing observations
 - Reducde reconstruction error from 1.4% to 0.4% compared to shallow model
 ** Pancan and pathway data
-*** Setup
+*** Setup: Combine Layers of OrMachines
 [[./arc.png]]
 *** "Data"
 # [[./arc_data_2.png]]
