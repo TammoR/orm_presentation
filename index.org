@@ -1,0 +1,311 @@
+#+TITLE: The OrMachine
+# #+AUTHOR: Yau Group meeting
+#+DATE: March 29, 2017
+#+email: Tammo Rukat
+#+AUTHOR: Tammo Rukat
+
+# Careful: the ox-reveal.el that is acutally being used is in .emacs.d/elpa/ox-reveal-20150408.831
+# #+REVEAL_ROOT: file:./org_reveal_presentation/
+#+REVEAL_ROOT: http://cdn.jsdelivr.net/reveal.js/3.0.0/
+# #+REVEAL_EXTRA_CSS: ./local.css
+#+OPTIONS: reveal_single_file:t
+#+OPTIONS: reveal_center:t reveal_progress:t reveal_history:nil reveal_control:f
+#+OPTIONS: reveal_mathjax:t reveal_rolling_links:f reveal_keyboard:t reveal_overview:t num:nil
+#+OPTIONS: reveal_width:1920 reveal_height:1080
+#+OPTIONS: toc:nil
+#+REVEAL_MARGIN: 0.15
+#+REVEAL_MIN_SCALE: 0.5
+#+REVEAL_MAX_SCALE: 2
+#+REVEAL_TRANS: cube 
+# default|cube|page|concave|zoom|linear|fade|none.
+#+REVEAL_THEME: sky
+ # sky, league, moon, solarized, league
+#+REVEAL_HLEVEL: 1
+#+REVEAL_PLUGINS: (notes highlight markdown)
+#+REVEAL_SLIDE_NUMBER: t
+#+REVEAL_DEFAULT_FRAG_STYLE: roll-in
+#+REVEAL_TITLE_SLIDE_BACKGROUND: ./logo.png
+#+REVEAL_TITLE_SLIDE_BACKGROUND_SIZE: 400px
+#+REVEAL_TITLE_SLIDE_BACKGROUND_REPEAT: repeat
+#+REVEAL_TITLE_SLIDE_TEMPLATE: <h1>%t</h1><br><br><br><br><br><h2>Bayesian Boolen matrix factorisation</h2>
+#+OPTIONS: org-reveal-center:t
+
+* Boolean Matrix Factorisation
+#+ATTR_REVEAL: :frag appear
+#+ATTR_HTML: :width 40% :height 40%
+[[./calc_digit_data.png]]
+#+ATTR_REVEAL: :frag appear
+#+ATTR_HTML: :width 40% :height 40%
+[[./calc_digit_factor.png]]
+#+ATTR_REVEAL: :frag appear 
+Example
+#+ATTR_REVEAL: :frag appear 
+#+ATTR_HTML: :width 45% :height 45%
+[[./calc_example.png]]
+** Probabilistic Generative Model
+#+REVEAL_HTML: <div class="column" style="float:left; width: 45%">
+#+ATTR_HTML: :width 90% :height 90%
+[[./calc_digit_intro.png]]
+#+REVEAL_HTML: </div>
+
+#+REVEAL_HTML: <div class="column" style="float:right; width: 55%">
+#+ATTR_REVEAL: :frag (appear appear) :frag_idx(1)
+Notation
+#+ATTR_REVEAL: :frag appear
+- ${x_{nd}}$ -- observations
+- ${u_{ld}}$ -- codes (globale variables)
+- ${z_{nl}}$ -- latent variables (local variables)
+- $\lambda$ -- global noise parameter
+
+#+ATTR_REVEAL: :frag (appear) :frag_idx(2)
+Definitions
+#+ATTR_REVEAL: :frag appear
+- Logistic sigmoid: $\sigma(x) = (1+\exp[-x])^{-1}$
+- Mapping $\{0,1\}$ to $\{-1,1\}$: $\tilde{x} = 2x-1$
+#+REVEAL_HTML: </div>
+
+#+REVEAL_HTML: <div class="column" style="float:right; width: 100%">
+#+ATTR_REVEAL: :frag appear
+$$  p(x_{nd}|\mathbf{u},\mathbf{z},\lambda)= \begin{cases} \sigma [ \lambda];\;&\text{if}\;x=\min(1,\mathbf{z}_n^T\mathbf{u}_d)\;\; \\ 1-\sigma [ \lambda]=\sigma[-\lambda];\;&\text{if}\;x\neq\min(1,\mathbf{z}_n^T\mathbf{u}_d)    \end{cases}
+$$
+#+ATTR_REVEAL: :frag appear
+$$\;\;\;\; = \sigma\left[\lambda \tilde{x}_{nd} \left(1-2\prod\limits_{l}(1-z_{nl}u_{ld})\right) \right]$$
+#+REVEAL_HTML: </div>
+#+BEGIN_NOTES
+- This is a probabilistic model for *Boolean matrix factorisation*.
+- Likelihood can be efficiently evaluated
+- Example topic models
+#+END_NOTES
+* Inference for the OrMachine
+** Full conditionals
+#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+#+ATTR_REVEAL: :frag (appear appear) :frag_idx (1 2)
+- Likelihood: $$L = \sigma\bigg[\lambda \tilde{x}_{nd} (1-2\prod\limits_{l}(1-z_{nl}u_{ld}) \bigg]$$
+- Full Conditional: $$ p(z_{nl}|\text{rest}) = \sigma\bigg[\lambda \tilde{z}_{nl} \sum\limits_d \tilde{x}_{nd}\; u_{ld}\prod\limits_{l'\neq l} (1-z_{nl'}u_{l'd})\bigg] $$
+  #+ATTR_REVEAL: :frag appear :frag_idx 3
+  - Intuition: Need to consider the full Markov Blanket including /explaining away/ dependencies.
+$$ $$
+#+ATTR_REVEAL: :frag (appear) :frag_idx (4)
+- *Computational shortcut:* Two criteria to skip the remaining inner products
+  #+ATTR_REVEAL: :frag (appear appear) :frag_idx (5 6)
+  - $u_{ld} = 0$ $\rightarrow$ No effect of $z_{nl}$ on the likelihood
+  - $z_{nl'}u_{l'd} = 1$ for $l' \neq l$ $\rightarrow$ $x_{nd}$ is /explained away/.
+#+REVEAL_HTML: </div>
+#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+#+ATTR_REVEAL: :frag appear :frag_idx 3
+[[./single_layer_network.png]]
+#+REVEAL_HTML: </div>
+** Implementation
+#+ATTR_HTML: :width 50% :height 60%
+[[./alg1_2.png]]
+
+** Dispersion paramter $\lambda$
+- $P$ counts how many entries $x_{nd}$ are correctly predicted by the deterministic Boolean matrix product $$ P = \sum\limits_{n,d} I\left[x_{nd}=(1-2\prod\limits_{l}(1-z_{nl}u_{ld})\right] $$
+- We can rewrite the likelihood
+ $$ L = \sigma(\lambda)^P \sigma(-\lambda)^{(ND-P)} $$
+- We find the MLE of $\sigma(\lambda)$ in *closed form*:
+$$ \sigma(\lambda)_{\text{mle}} =\frac{P}{ND}\;. $$
+** Metropolised Gibbs sampler - Algorithm
+#+ATTR_HTML: :width 50% :height 60%
+[[./alg2_mod.png]]
+** A modified binary state Gibbs sampler
+#+ATTR_REVEAL: :frag (appear appear appear appear) :frag_idx (1 2 3 4)
+- Old state $\mathbf{x}$, new state $\mathbf{y}$.
+- Gibbs sampler: Draw a new value from the full conditional $p(y|\text{rest})$, acceptance probability 1.
+- Here, we draw $y$ *different from the* $x$ with probability 1.
+- Metropolis-Hasting acceptance probability: $$ \frac{p(y|\text{rest}) q(x|y)}{p(x|\text{rest}) q(y|x)} = \frac{p(y|\text{rest})}{1-p(y|\text{rest})} \ge p(y|\text{rest})$$
+
+#+ATTR_REVEAL: :frag appear
+- Typical Gibbs sampler:
+
+  [[./heads_small.png]]   [[./heads_small.png]]  [[./heads_small.png]]  [[./tails_small.png]]  [[./heads_small.png]] 
+ [[./tails_small.png]]  [[./tails_small.png]]  [[./heads_small.png]]  [[./tails_small.png]]  [[./heads_small.png]]  [[./heads_small.png]] [[./tails_small.png]] 
+
+#+ATTR_REVEAL: :frag appear
+- Metropolised Gibbs sampler:
+
+  [[./heads_small.png]]  [[./tails_small.png]]   [[./heads_small.png]]  [[./tails_small.png]]  [[./heads_small.png]]  [[./tails_small.png]]  [[./heads_small.png]]  [[./tails_small.png]]  [[./heads_small.png]]  [[./tails_small.png]]  [[./heads_small.png]]  [[./tails_small.png]]
+* Examples and Experiments
+** Random matrix factorisation
+#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+$$ $$
+[[./mp.png]]
+- A similar probabilistic model.
+- MAP inference using message passing.
+- Outperforms all previous state-of-the-art methods.
+#+ATTR_REVEAL: :frag appear :frag_idx 1
+- *OrMachine features consistently lower reconstruction error*
+#+REVEAL_HTML: </div>
+#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+#+ATTR_REVEAL: :frag appear :frag_idx 1
+#+ATTR_HTML: :width 70% :height %0%
+[[./factorsiation_performance_new.png]]
+#+REVEAL_HTML: </div>
+** Random matrix completion
+#+ATTR_REVEAL: :frag (appear) :frag_idx (1)
+- Handling missing data is easy.Set an unobserved data-point $x_{nd} = 0.5 \;\rightarrow\; \tilde{x}_{nd}=0$ 
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="2"><p>
+$$L = \prod\limits_{nd} \sigma\left[\lambda \tilde{x}_{nd} (1-2\prod\limits_{l}(1-z_{nl}u_{ld}) \right]\;\;\;\rightarrow\text{Contribute constant factor}\;\sigma(0)=\frac{1}{2}$$ 
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="3"><p>
+$$ p(z_{nl}|\text{rest}) = \sigma\left[\lambda \tilde{z}_{nl} \sum\limits_d \tilde{x}_{nd}\; u_{ld}\prod\limits_{l'\neq l} (1-z_{nl'}u_{l'd})\right]\;\;\;\rightarrow \text{No contribution} $$
+#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+#+ATTR_REVEAL: :frag appear :frag_idx 4
+#+ATTR_HTML: :width 80% :height 50%
+[[./completion1.png]]
+#+REVEAL_HTML: </div>
+#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+#+ATTR_REVEAL: :frag appear :frag_idx 5
+#+ATTR_HTML: :width 85% :height 50%
+[[./completion2.png]]
+#+REVEAL_HTML: </div>
+** MovieLense
+#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+#+ATTR_HTML: :width 85% :height 50%
+[[./movielense1.png]]
+#+REVEAL_HTML: </div>
+#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+#+ATTR_HTML: :width 85% :height 50%
+[[./ml_roc.png]]
+#+REVEAL_HTML: </div>
+** Single cell data II - 1.3 Million Brain Cells x 20k genes (E18 Mice)
+*** Calculator digits
+[[./calc_hierarchy_feb21.png]]
+- Infer OrMachines of different dimensionality on noise-free calculator digits
+*** Gene patterns
+#+ATTR_HTML: :width 90% :height 50%
+[[./mice_neurons1.png]]
+*** Specimen representations
+#+ATTR_HTML: :width 90% :height 50%
+[[./mice_neurons2.png]]
+** Deep noisy calculator digits
+#+ATTR_HTML: :width 50% :height 50%
+[[./deeper_calc.png]]
+- Input: 50 digits with 70% missing observations
+- Reducde reconstruction error from 1.4% to 0.4% compared to shallow model
+** Pancan and pathway data
+*** Setup
+[[./arc.png]]
+*** "Data"
+# [[./arc_data_2.png]]
+#+ATTR_HTML: :width 70% :height 70%
+[[./pancan_data.png]]
+*** Embeddinga
+#+ATTR_HTML: :width 80% :height 80%
+[[./pancan_representations.png]]
+*** Clustering via one-hot activations
+# [[./arc_codes_2.png]]
+#+ATTR_HTML: :width 60% :height 60%
+[[./pancan_clustering.png]]
+* Conclusion
+# :PROPERTIES:
+# :reveal_background: ./logo.png
+# :reveal_background_trans: slide
+# :reveal_background_size: 400px
+# :reveal_background_repeat: repeat
+# :END:
+- Boolean Matrix Factorisation is a simple and intuitive model for binary observations.
+- The OrMachine is a probabilistic model with highly scalable Bayesian inference.
+- Missing data and prior knowledge can easily be dealt with.
+- Multi-layer hierarchies can extract remaining correlations and provide a novel way to include additional information
+* Additional Material
+** Auto-Regulating Sparsity
+#+ATTR_HTML: :width 70% :height 70%
+[[./single_cell_overfit.png]]
+** Preprint on ArXiv
+#+ATTR_HTML: :width 90% :height 90%
+[[./arxiv.png]]
+** Hamming Machine
+#+ATTR_REVEAL: :frag (appear appear appear appear) :frag_idx (1 2 3 4)
+- Construct a probability distribution based on the hamming distance between two binary vectors, ${h(\mathbf{x},\mathbf{u})}$, and a dispersion parameter ${\lambda}$: $$ p(\mathbf{x}|\mathbf{u}) \propto \exp\left[ -\lambda \, h(\mathbf{x},\mathbf{u}) \right] $$
+- Each observations ${\mathbf{x} }$ is generated from a subset of binary *codes*: ${\mathbf{u}_{l{=}1\ldots L}}$, selected by a vector of binary latent variables ${\mathbf{z}}$ $$ p(\mathbf{x}|\mathbf{U},\mathbf{z},\lambda) \propto \prod\limits_l p(\mathbf{x}|\mathbf{u}_l,\lambda)^{z_l} = \prod\limits_d \exp\left[- \sum_l z_l \lambda h(x_d,u_{ld}) \right]$$
+- Normalising the likelihood for for binary observations yields a *logistic sigmoid*: $$ p(x_d = 1|\mathbf{z}, \mathbf{u}_{1\ldots L}, \lambda) = \frac{1}{1+\exp\left[-\lambda \sum\limits_l z_l (2u_{ld} - 1) \right]} = \sigma\left[\lambda \sum_l z_l \tilde{u}_{ld} \right]$$
+- We defined the mapping from ${\{0,1\}}$ to ${\{{-}1,1\}\,}$: $\;\;{\tilde{u} = 2u{-}1}$ 
+#+BEGIN_NOTES
+  - We use the tilde mapping throughout
+  - This migh be a bit unconventional
+#+END_NOTES
+** One-hot sampling
+** Introduction to Latent Variable Models 
+#+BEGIN_NOTES
+- I am sure you are all familiar with the notion of latent variable models. However, I'd like to use this section to introduce the notation and to set the stage for what follows.
+- Latent variables are often thought of as underlying, unobserved properties that explain the observed data. For example states of disease that explain physiological parameters. Another example for a latent variable could be a persons particular taste that explains which product they buy or which movie they watch.
+#+END_NOTES
+*** Notation and Graphical Model
+#+BEGIN_NOTES
+- graphical model (directed = Bayes nets) encodes independence properties
+- Everyone familiar with plate notation?
+- from a frequentist point of view there is a difference between latent variables and paramters, for a Bayesian there isn't.
+- continuous variables are often inappropriate
+#+END_NOTES
+#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+#+ATTR_REVEAL: :frag (appear appear appear) :frag_idx(1)
+[[./plate_model.png]]
+#+ATTR_REVEAL: :frag (appear appear appear) :frag_idx(1)
+- Mixture models
+- Factor Analysis (PCA)
+#+REVEAL_HTML: </div>
+#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+#+ATTR_REVEAL: :frag appear
+#+ATTR_REVEAL: :frag (appear appear appear appear appear appear) :frag_idx(2 2 2 2 2 2)
+- Variables
+  + ${x_{nd}}$ -- observations
+  + ${u_{ld}}$ -- parameters (globale variables, weights)
+  + ${z_{nl}}$ -- latent variables (local variables)
+- Indices
+  + ${n = 1\ldots N}$ -- observations/specimens
+  + ${d = 1\ldots D}$ -- features (e.g. pixels or genes)
+  + ${l = 1\ldots L}$ -- latent dimensions
+  + ${k = 1\ldots K}$ -- layers
+- N observations 
+- D features 
+- L latent variables
+- K layers / abstraction levels
+#+REVEAL_HTML: </div>
+
+*** Neural network
+[[./single_layer_network.png]]
+#+ATTR_REVEAL: :frag (appear appear appear) :frag_idx(1)
+- Major difference to feed forward neural nets: Nodes *and* weights are stochastic
+*** What makes a good latent variable model for biological data?
+#+BEGIN_NOTES
+- Latent properties will often be discrete.
+- Scale well
+#+END_NOTES
+** Multi-layer OrMachine
+[[./twolayer_hm.png]]
+
+With ${\mathbf{z}^{[0]}_n = \mathbf{x}_n}$ and ${L^{[0]} = D}$, that is
+$$  p(\mathbf{Z}^{[0:K]},\mathbf{U}^{[1:K]},\lambda) = 
+  p(\mathbf{Z}^{[K]}) \prod_{k=0}^{K-1} p(\mathbf{Z}^{[k]}|\mathbf{Z}^{[k{+}1]},\mathbf{U}^{[k{+}1]},\lambda^{[k{+}1]})\, p(\mathbf{U}^{[k{+}1]})\, p(\lambda^{[k{+}1]}) 
+$$
+
+The joint density factorises in terms of the form p(layer|parents)
+** Random matrix factorisation
+*** Problem setting
+#+ATTR_HTML: :width 50% :height 50%
+[[./factorisation.png]]
+** Speed
+[[./scaling_parallel.png]]
+** Single cell data I
+[[./sc_hierarchy.png]]
+** MNIST
+#+ATTR_HTML: :width 60% :height 50%
+[[./mnist_hierarchy.png]]
+#+BEGIN_NOTES
+- Explain overfitting (get more and more distributed representation)
+#+END_NOTES
+** Deep calculator digits
+[[./calc_digit_intro.png]]
+#+ATTR_HTML: :width 50% :height 50%
+[[./deep_calc.png]]
+- Second layer representation fed forward to data layer.
+
+** A little detour: Peskun's Theorem
+#+ATTR_REVEAL: :frag (appear appear appear) :frag_idx (1 4)
+- We have
+  #+ATTR_REVEAL: :frag (appear appear appear) :frag_idx (1 2 3)
+  - A random variable $X$ following a distribution $\pi$ 
+  - Transition matrices $P_1$ and $P_2$ that are reversible for $\pi$: $$ \pi(x)P(x,y) = \pi(y)P(y,x) $$
+  - Define $P_2 \ge P_1$, if it's true for every off-diagonal element.
+- The theorem states, if $$P_2 \ge P_1$$ then:
+  $$ v(f, \pi, P_1) \ge v(f, \pi, P_2) $$ where $$ v(f, \pi, P) = \lim_{N\rightarrow\infty} N \text{var}(\hat{I}_N) $$ is the variance of some estimator $$ \hat{I}_N = \sum\limits_{t=1}^N \frac{f(X^{(t)})}{N}\;\; \text{of}\;\; I = E_{\pi}(f)$$

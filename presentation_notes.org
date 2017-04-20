@@ -1,0 +1,34 @@
+
+* Intro (Slide 0)
+- My PhD is concerned with
+- Binary data is important in many applications, such as
+- But particularly in biological data. Measurement are often very noisy, we have large amounts of data and what we're ultimately interest in is often whether or not a biological mechanism is activated, whether or not a DNA basepair is mutated or whether or not a gene is expressed. All observations that are inherently binary.
+- Start from general matrix factorisation?
+  - Two of the most popular uses for matrix factorizations are separating structure and noise, and learning missing values of matrices.
+
+* Title slide
+- So what is BooMF? We approximate a binary data matrix by the product of two low rank binary matrices, where every entry in their product is thresholded at 1.
+
+* Slide 1
+- I'd like to give you little toy example, that was loosley inspired by the ubiqutious MNIST dataset
+- Every image 
+- composable features
+
+* Slide 2
+Other examples are
+- topic modeling
+- movie likes
+- genetics
+
+* Slide 2-1
+- This is a really simple mode, so how do we do inference?
+- Full coniditional. The problem is symmetric u and z are exchangable
+
+* Random Matrix completion
+- Technically need to index the observed components and only iterate over these, set \tilde{x} to zero gives constant contribution to the likelihood and none to the conditional
+
+* Mention
+- exchangability of u/z
+- how in the binary world we can do lots of amazing things
+- Single sweep through 10 Million data points with 10 latent dimensions well below 1s on 8 core Desktop machine
+- immune to overfitting
