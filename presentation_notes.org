@@ -1,34 +1,81 @@
 
-* Intro (Slide 0)
-- My PhD is concerned with
-- Binary data is important in many applications, such as
+* Intro (Slide 1)
+Boolean matrix factorisation is a simple and easily interpretable latent variable model for binary observations. It can helps to seperate structure from noise or infer latent properties that allow us do understand the processes that have generated the data. Today, I would like to present our approach of framing Boolean matrix factorisation as a probabilistic model and show how we can do fast, highly scalable Bayesian inference to handle Billions of data points on commodity hardware.
+
+** Outtakes
 - But particularly in biological data. Measurement are often very noisy, we have large amounts of data and what we're ultimately interest in is often whether or not a biological mechanism is activated, whether or not a DNA basepair is mutated or whether or not a gene is expressed. All observations that are inherently binary.
-- Start from general matrix factorisation?
-  - Two of the most popular uses for matrix factorizations are separating structure and noise, and learning missing values of matrices.
+- Two of the most popular uses for matrix factorizations are separating structure and noise, and learning missing values of matrices.
+* Title (slide 2.1)
+What is Boolean Matrix Factorisation? It is the approximation of a binary data matrix by the product of two, also binary, low rank matrices. In constrast to a standard non-negative matrix factorisation, entries in the product matrix are thresholded at one. Let me show you a little toy example [click]. Here the data consists of digits as they are displayed in calculators. White pixels represent zeros, black pixels represent ones. We have ten observations, rearranged to 2d images for interpretation. What would the Boolean Factorsiation of this data look like? ...[pause]... [klick] Well, if our factor matrices have a latent dimensionality of 7, than the Boolen factorisation should decompose the data into the seven constituent bars. All digits can be composed by a subset of bars. Here we can see a results for a latent dimensionality of 6. [click] For instance to model digit 2, we use these four codes, and apply the OR operation, which is equivalent to adding them up and thresholding at 1. The L-dimensional indicator Z provides the compact representation of which codes are allocated to each observation. For our example it is given in the corresponding column n=2 in the matrix of latent representations. 
+Boolean matrix factorisation has many applications, ranging from topic modelling to collaborative filtering or computational biology. In particular because it captures the simple intuition of composable features.
+Note, that in this example, we have only 6 dimensions which is insufficient for perfect reconstruction of the data. Therefore the code l equals 5 consists of two bars. You can convince yourself, that this two bars do indeed co-occur very frequently in the data. However, with these codes we can't compose the digit 7. and hence the posterior mean probability of assigning the fifth code to observation 7 is inferred to 1/2.
+** Outtakes
+- Say for instance, we observe across multiple cells whether or not genes are expressed. Then the latent codes would encompass sets of genes that co-occur and that may correspdond to biological processes. Now, if one gene is part of several biological processes, we would expect it to be expressed in the cell where one or more of these processes are active. This inuition is exactly captured by the Boolen product.
+- We can think of Boolean MF as binary factor analysis or as a admixture model, where each observation is assigned to a subset of centroids or codes.
+- Bayesian approach to BooMF
+* Probabilistc generative model (slide 2.2)
+We introduce a Bayesian approach to Boolean matrix factorisation. Let me briefly introduce a some notation. The data matrix X consists of N binary observations with D features. It is generated from a discrete mixture of L binary codes thate we denot as u. Binary latent variables z_nl denote whether or not code u_l is is used in generating observation x_n. In additioan to that we have a global dispersion parameter lambda, that controls for the noise in the generative process.
+I will also frequently use the mapping from {0,1} to {-1,1}, denoted by a tilde, as well the logistic sigmoid function that maps from the real numbers to the interval from zero to one. With this we can write down the model. It states that probability of an observation x equals the sigmoid of lambda, that means is greater than 0.5, if x equals the minimum of 1 and dot product of the corresponding row and column of the factor matrices. This encodes the OR operation, in that it evaluates to 1 if z and u are both equal to one in any of the latent dimensions. The exact magnitude of the parameter lambda is inferred from the data as we will describe shortly. Using the tilde mapping, we can write the likelihood in a more compact form. Now the or operation is encoded in the product. If both, z and u are 1 in any of the latent dimensions, the product term evaluates to zero. Note, that if lambda goes to infinity all probabities go to either zero or one and the model described the deterministic Boolen matrix product. For now we assume independent Bernoulli priors of .5 for u's and z's and uniform prior between .5 and 1 for sigmoid lbda.
+* Inference for the OrMachine (slide 3.1)
+Next, I'd like to show you how we can do extremely fast and scalable Bayesian inference for this model. 
+* Full conditional (3.2)
+Here is a reminder of the model likelihood. To do Gibbs sampling, we now want to derive the conditionals of of the entries of the factor matrices u and z.
+Fortunately, the full conditional for an entry z_nl takes this surprisingly simple expression. Cleary, the model is symmetric in the factor matrices, and therefore the conditional for u will take the same form. I won't derive this formally but its worthwile to discuss it a bit. Let's consider the representation of our model as a directed graphical model. Clearly, matrix factorisation is like a neural single layer neural network without non-linearty. Therefore, if we unroll the model along the feature dimension D and along the latent dimension L, it looks like a neural network. The local latent variables z constitute the hidden layer and the codes u are the weights. So why is that representation interesting? Let's look at the expression for the full conditional. If we want to find the probability for particular latent variable z, we normally have to consider z's full Markov blanket. Here, we need to sum over all its d child observations and for every child, we need to evalute a product over all its parents, the co-parents of our latent variable.
+However, if we look at more closely, there is a nice computational shortcut. There are two conditions and if one of them is met, we can skip all the remaining computations for the expression inside the sum.
+Firstly, if the corresponding weight u equals zero, then the value of z simple does not matter, it's like the connection to it's child node is cut. So the the contribution to the sum is 0
+Second, if for any latent dimension l prime the product of z prime and u prime evaluates to one, the contribution to the sum is also zero. That is beacuse parent in the network already explains the observation x_nd. In other words, x_nd is /explained away/. This is a very simple example of the explaining away effect that makes inference in directed neural networks difficult.
+So we simply iterate throught the child nodes until we find that any of the stoppign criteria applies. Only if it doesn't we get a contribution of either -1 or +1 times lambda inside the sigmoid.
+* Implemenation (3.3)
+This can be formally put into an algorithm, shown here. You can see the two continue statements that can shortcute the computation. We need two more ingredients to complete the inference.
+** Outtakes 
+We can put these stopping rules in an algorithm. For every d, check whether the corresponding weight is zero. If it is, move to the next d. If it is one, check the other parents. If you find a parent that already emits a 1, x_nd is explained away and we move continue with the next d. Only if none of these conditions apply add either -1 or 1 to the accumulator. The coniditional probabity is then the logistic sigmoid of lambda times this integer count of contributions of z to the data. 
+* Dispersion Parameter lambda (3.4)
+Fortunately, the The maximum likelihood estimate of sigmoid(lambda) is available in closed formed. If we denote the number of observations that are correctly predicted by the deterministic Boolean products as P, then we can rewrite the Likelihood in this simple form. Then we finde that the MLE of sigmoid(lambda) is the fraction of correctly reconstructed datapoints or the reconstruction accuracy of the determnistic product.
+* A modified binary staet Gibbs sampler (3.5)
+We have one further trick to make this more efficient. Instead of drawing samples from the full conditional that are accepted with probability 1, we use Metropolis Hastings and propose new states that are always different from the old states. If we plug this proposal distribution into the MH acceptance ratio, the q's cancel we find that our mutation probability is as least as high as that for the Gibbs sampler. And hence, we explore the space more efficiently. For example, if we draw samples from a fair coin this is what a Gibbs sampler might look like wiht independent probabilities of 1/2 at every step. This is was a metropolised Gibbs sampler looks like, where always swap the current state.
+** Outtakes
+* Metropolised Gibbs sampler algorithm (3.6)
+To summarise the inferece, here is our sampling algorithm. We sweep through all variables u and z and update them according to the metropolised Gibbs sampler. After each sweep, we set lambda to its MLE in to Monte-Carlo EM fashion.
+* Examples and Experiments (4.1)
+So how do we do in practice? I will first show some performance comparison on synthetic data.
+* Random matrix factorisation
+There are variety of algorithms for Boolen matrix factosiation. We compare out method to this recent approach. It is based on a similar probabilistic model performes MAP inference with message passing. More importnatly, it has shown to outperform the other existing methods and is therefore the focus of our benchmarks.
+We start with random matrix factorisation, where we generate a large random matrix of low rank, add random noise, then factorise it and try to reconstrut the original uncorrupted matrix from the factorisation. Here I show the reconstruction error under variatio of the noise level on the x-axis. The OrMachine are in green and we see that it has a consistently lower reconstriction error. E.g. in the top figure, for a onethousand by onethousand matrix of rank 5, we get close-to perfect reconstruction for noise levels of up to 35%. The results are similar for other setups.
+* Random Matrix completion (4.2)
+The OrMachine can very easily handle unobserved data, which enables us to complete missing entries. Normally, to handle missing data, we would have to marginalise out the missing observations. It turns out, that this is equvialent to simply setting missing observations ot .5 such that x tilde equals zero. Looking at the likelihood, contributions from missing data points simply contribute a constant factor. Consequently, they do not contribute to the full conditional at all.
+So we can run a similar experiment, creating large matrices with low rank structure, randomly delete observations and reconstructing them from low rank factorisations. This plot shows the fraction of correctly completed entries, varying the fraction of observed data for a 250 by 250 matrix of rank 5. Again, our model performs consistently better than the competing approach. Importantly, we infer posterior probabilities on the unobserved entries. This plot shows the distribution of the posterior means for correctly completed entries in blue and for uncorrectly completed entries in green. It confirms that the model infers useful uncertainty estimates, in that it is fairly uncertain about the entries that are missclassified and certain about the correctly classified entries.
+* MovieLens (4.3)
+For a real-world collaborative filtering task, we benchmark the performance on predicting binary movie ratings in the MovieLens datasets. Again, we perform better than message passing, in particular when only small fractions of the data are observed. Having posterior probabilities over the unobserved ratings at hand, we can build a ROC curve and tune for false positive rates.
+- Get rid of ROC?
+- Get rid of slide altogether?
+* Single cell data (4.5)
+So let's move to an example from single-cell biology. We will run the OrMachine on a dataset of single cell gene expression profile where gene expression levels are measured for 20 thousand genes in 1.3 Million single mouse brain cells. We set all non-zero expression levels to 1, and after preprocessing, are left with 14 billion datapoints. Nevertheless we can run this on commodity hardware in about an hour.
+But before I show you results, I would like to go back to the calculator digits to highlight another property of the OrMachine
+* Calculator digit hierarchy (4.6)
+So the data is the same as in our introductory example, but we seperately fit models of dimension 3 to 7. We can see that, without imposing any hierarchical relationship, there is a clear hierarchical realtionship when the codes become more distributed. In the bottom row, we end up with the single bar representation. Going up to lower latent dimensions, codes that are likely to occur together are combined, whereas more idiosyncratic bars stay separate.
+* Gene patterns
+We now show the corresponding Figure for the single cell data, where instead of image pixels we group genes together that are jointly expressed in across the 1.3 Million cells. On each of these sets of genes we run a gene set enrichment analysis, that assigns corresponding biological states. As before we find a hierarchy and see by increasing the latent dimensionality, that gene sets ans their corresponding biological states become more specific. See for instance the olfactory bulb and hippocampus in the first and second column.
+* Specimen Representations
+Look at the corresponding representation of specimens, each box now has 1.3 Million columns and indicates whether or not a particular specimen expresses the correspondin gene set. For the exampe I just mentioned, we can see an increase in posterior uncertainty as the gene sets become more specific for olfactory bulb and hippocampus. Overall we find that this provides biologically plausible and easily interpretable latent representations while scaling to very large datasets, even on commodity hardware.
+* Deep noisy calculator digits
+If we want to extract as much structure from data as we possible, we can apply another OrMachine to the factor matrix and build a hierearchies of representations. Here we use a model with three hidden layers and plot for every latent variable, the corresponding activation in the output layer. Essentially deeper layers identify correlations in the code assignemtns of the next higher layer. You can think of this a probabilistic autoencoder. Compressed representation of the 10 input digits are shown on the right.
+* Setup: Combine layers of OrMachines 
+For a Bayesian, adding another layer is like expressing a prior belief that the factor matrix has some more /factorisable/ structure.
+In this spirit, we can use the multi-layer approach to integrate prior knowledge at different abstraction levels. Here is an example. We have a sparse binary matrix of genes and patients indicating whether or not mutation is present. We also have a matrix of genes times pathways, that indicates whether a gene plays a roll in a cellular pathway. The Boolen matrix prouct between these two would be the naturaly way to model a patient pathway matrix, that indicates which pathways are affected in each patient. This is the first Boolen product on the left hand side of the figure. Simultaneously to sampling from this probabilistc matrix product, we learn a factorisation of the patient-pathway matrix to identify sets of co-occuring pathways. On top of that, we add another layer that factorises the latent assignments and that is fixed to a one-hot encoding to the type of cancer that the corresponding patient has. The sampling is done for all layers simultaneously.
+* Data 
+Here is the inferred patient-pathway matrix, where the each colum represent a patient ordered by their particular type of disease.
+* Embedding
+Here we see the intermediate latent embedding. On the left hand side, each row is a patient making use of sets of pathways that are shown on the right hand side. Induced by the disease labels in the prior, we see that most samples of the same disease types share the same latent embedding.
 
-* Title slide
-- So what is BooMF? We approximate a binary data matrix by the product of two low rank binary matrices, where every entry in their product is thresholded at 1.
+We learn a distributed pathway sets that are encouraged to allow for coherent representation of disease types.
 
-* Slide 1
-- I'd like to give you little toy example, that was loosley inspired by the ubiqutious MNIST dataset
-- Every image 
-- composable features
+* Clustering 
+Very similary, we can remove the label-data and do unsupervised clustering where force the most abstract representations to be one hot. That way every sample is assigned to exactly one code of pathways as shown here with latent representations on the left and corresponding pathway sets on the right. Some correspondence between disease type and representation reamins.
 
-* Slide 2
-Other examples are
-- topic modeling
-- movie likes
-- genetics
-
-* Slide 2-1
-- This is a really simple mode, so how do we do inference?
-- Full coniditional. The problem is symmetric u and z are exchangable
-
-* Random Matrix completion
-- Technically need to index the observed components and only iterate over these, set \tilde{x} to zero gives constant contribution to the likelihood and none to the conditional
+* Conclusion
+Read slide
 
 * Mention
-- exchangability of u/z
 - how in the binary world we can do lots of amazing things
 - Single sweep through 10 Million data points with 10 latent dimensions well below 1s on 8 core Desktop machine
 - immune to overfitting

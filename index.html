@@ -19,7 +19,7 @@
         document.getElementsByTagName( 'head' )[0].appendChild( link );
     }
 </script>
-<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML,mathjax_local"></script>
 </head>
 <body>
 <div class="reveal">
@@ -31,24 +31,43 @@
 <section>
 <section id="slide-sec-1">
 <h2 id="sec-1">Boolean Matrix Factorisation</h2>
+<div class="column" style="float:left; width: 50%">
+<p>
+$$ $$
+</p>
+<span class="fragment (appear)" data-fragment-index="1"><p>
+<p>
+Observed Data
+</p>
 
 <div class="figure">
-<p><img src="./calc_digit_data.png" alt="calc_digit_data.png" data-fragment-index="1" class="fragment appear" width="40%" height="40%" />
+<p><img src="./calc_digit_data.png" alt="calc_digit_data.png" data-fragment-index="1" class="fragment appear" width="90%" height="90%" />
 </p>
+</div>
 </div>
 
-<div class="figure">
-<p><img src="./calc_digit_factor.png" alt="calc_digit_factor.png" data-fragment-index="2" class="fragment appear" width="40%" height="40%" />
-</p>
-</div>
+<div class="column" style="float:left; width: 50%">
 <span class="fragment (appear)" data-fragment-index="2"><p>
+<p>
+Factorisation
+</p>
+
+<div class="figure">
+<p><img src="./calc_digit_factor.png" alt="calc_digit_factor.png" data-fragment-index="2" class="fragment appear" width="90%" height="90%" />
+</p>
+</div>
+</div>
+
+<div class="column" style="float:left; width: 100%">
+<span class="fragment (appear)" data-fragment-index="3"><p>
 <p>
 Example
 </p>
 
 <div class="figure">
-<p><img src="./calc_example.png" alt="calc_example.png" data-fragment-index="2" class="fragment appear)" width="45%" height="45%" />
+<p><img src="./calc_example.png" alt="calc_example.png" data-fragment-index="3" class="fragment appear)" width="45%" height="45%" />
 </p>
+</div>
 </div>
 </section>
 <section id="slide-sec-1-1">
@@ -69,7 +88,7 @@ Notation
 <li>\({x_{nd}}\) &#x2013; observations</li>
 <li>\({u_{ld}}\) &#x2013; codes (globale variables)</li>
 <li>\({z_{nl}}\) &#x2013; latent variables (local variables)</li>
-<li>\(\lambda\) &#x2013; global noise parameter</li>
+<li>\(\lambda \ge 0\) &#x2013; global noise parameter</li>
 
 </ul>
 
@@ -115,11 +134,14 @@ $$\;\;\;\; = \sigma\left[\lambda \tilde{x}_{nd} \left(1-2\prod\limits_{l}(1-z_{n
 <div class="column" style="float:left; width: 50%">
 <ul>
 <li data-fragment-index="1" class="fragment appear">Likelihood: $$L = \prod\limits_{nd} \sigma\bigg[\lambda \tilde{x}_{nd} (1-2\prod\limits_{l}(1-z_{nl}u_{ld}) \bigg]$$</li>
-<li data-fragment-index="2" class="fragment appear">Full Conditional: $$ p(z_{nl}|\text{rest}) = \sigma\bigg[\lambda \tilde{z}_{nl} \sum\limits_d \tilde{x}_{nd}\; u_{ld}\prod\limits_{l'\neq l} (1-z_{nl'}u_{l'd})\bigg] $$
+<li data-fragment-index="2" class="fragment appear">Full Conditional:</li>
+
+</ul>
+<p>
+$$ TeX: {extensions: ["color.js"]} p(z_{nl}|\text{rest}) = \sigma\bigg[\lambda \tilde{z}_{nl} \sum\limits_d \tilde{x}_{nd}\; \textcolor{blue}{u_{ld}}\prod\limits_{l'\neq l} (1-z_{nl'}u_{l'd})\bigg] $$
+</p>
 <ul data-fragment-index="3" class="fragment appear">
 <li>Intuition: Need to consider the full Markov Blanket.</li>
-
-</ul></li>
 
 </ul>
 <p>
@@ -145,15 +167,18 @@ $$ $$
 </section>
 <section id="slide-sec-2-2">
 <h3 id="sec-2-2">Implementation</h3>
+<div class="column" style="float:left; width: 100%">
 
 <div class="figure">
 <p><img src="./alg1_2.png" alt="alg1_2.png" width="50%" height="60%" />
 </p>
 </div>
+</div>
 
 </section>
 <section id="slide-sec-2-3">
 <h3 id="sec-2-3">Dispersion paramter \(\lambda\)</h3>
+<div class="column" style="float:left; width: 100%">
 <ul>
 <li>\(P\) counts how many entries \(x_{nd}\) are correctly predicted by the deterministic Boolean matrix product $$ P = \sum\limits_{n,d} I\left[x_{nd}=(1-2\prod\limits_{l}(1-z_{nl}u_{ld})\right] $$</li>
 <li>We can rewrite the likelihood
@@ -164,9 +189,11 @@ $$ L = \sigma(\lambda)^P \sigma(-\lambda)^{(ND-P)} $$</li>
 <p>
 $$ \sigma(\lambda)_{\text{mle}} =\frac{P}{ND}\;. $$
 </p>
+</div>
 </section>
 <section id="slide-sec-2-4">
 <h3 id="sec-2-4">A modified binary state Gibbs sampler</h3>
+<div class="column" style="float:left; width: 100%">
 <ul>
 <li data-fragment-index="1" class="fragment appear">Old state: \(\mathbf{x}\), new state: \(\mathbf{y}\).</li>
 <li data-fragment-index="2" class="fragment appear">Gibbs sampler: Draw a new value from the full conditional \(p(y|\text{rest})\).</li>
@@ -193,13 +220,16 @@ $$ \sigma(\lambda)_{\text{mle}} =\frac{P}{ND}\;. $$
 </p></li>
 
 </ul>
+</div>
 </section>
 <section id="slide-sec-2-5">
 <h3 id="sec-2-5">Metropolised Gibbs sampler - Algorithm</h3>
+<div class="column" style="float:left; width: 100%">
 
 <div class="figure">
 <p><img src="./alg2_mod.png" alt="alg2_mod.png" width="50%" height="60%" />
 </p>
+</div>
 </div>
 </section>
 </section>
@@ -235,6 +265,7 @@ $$ $$
 </section>
 <section id="slide-sec-3-2">
 <h3 id="sec-3-2">Random matrix completion</h3>
+<div class="column" style="float:left; width: 100%">
 <ul>
 <li data-fragment-index="1" class="fragment appear">Missing dat? Set unobserved data-point to \(x_{nd} = 0.5 \;\rightarrow\; \tilde{x}_{nd}=0\)</li>
 
@@ -247,6 +278,7 @@ $$L = \prod\limits_{nd} \sigma\left[\lambda \tilde{x}_{nd} (1-2\prod\limits_{l}(
 <p>
 $$ p(z_{nl}|\text{rest}) = \sigma\left[\lambda \tilde{z}_{nl} \sum\limits_d \tilde{x}_{nd}\; u_{ld}\prod\limits_{l'\neq l} (1-z_{nl'}u_{l'd})\right]\;\;\rightarrow\; \text{No contribution} $$
 </p>
+</div>
 <div class="column" style="float:left; width: 50%">
 
 <div class="figure">
@@ -284,6 +316,7 @@ Percentages of correctly predicted, unobserved movie ratings.
 </div></section>
 <section id="slide-sec-3-4-1">
 <h4 id="sec-3-4-1">Calculator Digit Hierarchy</h4>
+<div class="column" style="float:left; width: 100%">
 
 <div class="figure">
 <p><img src="./calc_hierarchy_feb21.png" alt="calc_hierarchy_feb21.png" />
@@ -293,9 +326,11 @@ Percentages of correctly predicted, unobserved movie ratings.
 <li>Infer OrMachines of different dimensionality on noise-free calculator digits</li>
 
 </ul>
+</div>
 </section>
 <section id="slide-sec-3-4-2">
 <h4 id="sec-3-4-2">Gene patterns &#x2013; Cell representations</h4>
+<div class="column" style="float:left; width: 100%">
 
 <div class="figure">
 <p><img src="./mice_neurons1.png" alt="mice_neurons1.png" width="80%" height="50%" />
@@ -306,9 +341,11 @@ Percentages of correctly predicted, unobserved movie ratings.
 <p><img src="./mice_neurons2.png" alt="mice_neurons2.png" data-fragment-index="1" class="fragment appear" width="80%" height="50%" />
 </p>
 </div>
+</div>
 </section>
 <section id="slide-sec-3-5">
 <h3 id="sec-3-5">Deep noisy calculator digits</h3>
+<div class="column" style="float:left; width: 100%">
 
 <div class="figure">
 <p><img src="./deeper_calc.png" alt="deeper_calc.png" width="50%" height="50%" />
@@ -316,9 +353,10 @@ Percentages of correctly predicted, unobserved movie ratings.
 </div>
 <ul>
 <li>Input: 50 digits with 70% missing observations</li>
-<li>Reducde reconstruction error from 1.4% to 0.4% compared to shallow model</li>
+<li>Reduce reconstruction error from 1.4% to 0.4% compared to shallow model</li>
 
 </ul>
+</div>
 </section>
 <section id="slide-sec-3-6">
 <h3 id="sec-3-6">Pancan and pathway data</h3>
@@ -326,47 +364,58 @@ Percentages of correctly predicted, unobserved movie ratings.
 </div></section>
 <section id="slide-sec-3-6-1">
 <h4 id="sec-3-6-1">Setup: Combine Layers of OrMachines</h4>
+<div class="column" style="float:left; width: 100%">
 
 <div class="figure">
 <p><img src="./arc.png" alt="arc.png" />
 </p>
 </div>
+</div>
 </section>
 <section id="slide-sec-3-6-2">
 <h4 id="sec-3-6-2">"Data"</h4>
+<div class="column" style="float:left; width: 100%">
 
 <div class="figure">
-<p><img src="./pancan_data.png" alt="pancan_data.png" width="70%" height="70%" />
+<p><img src="./pancan_data.png" alt="pancan_data.png" width="80%" height="80%" />
 </p>
+</div>
 </div>
 </section>
 <section id="slide-sec-3-6-3">
-<h4 id="sec-3-6-3">Embeddinga</h4>
+<h4 id="sec-3-6-3">Embedding</h4>
+<div class="column" style="float:left; width: 100%">
 
 <div class="figure">
-<p><img src="./pancan_representations.png" alt="pancan_representations.png" width="80%" height="80%" />
+<p><img src="./pancan_representations.png" alt="pancan_representations.png" width="75%" height="75%" />
 </p>
+</div>
 </div>
 </section>
 <section id="slide-sec-3-6-4">
 <h4 id="sec-3-6-4">Clustering via one-hot activations</h4>
+<div class="column" style="float:left; width: 100%">
 
 <div class="figure">
 <p><img src="./pancan_clustering.png" alt="pancan_clustering.png" width="60%" height="60%" />
 </p>
+</div>
 </div>
 </section>
 </section>
 <section>
 <section id="slide-sec-4">
 <h2 id="sec-4">Conclusion</h2>
+<div class="column" style="float:left; width: 100%">
 <ul>
-<li>Boolean Matrix Factorisation is a simple and intuitive model for binary observations.</li>
-<li>The OrMachine is a probabilistic model with highly scalable Bayesian inference.</li>
-<li>Missing data and prior knowledge can easily be dealt with.</li>
-<li>Multi-layer hierarchies can extract remaining correlations and are used to leverage label information.</li>
+<li data-fragment-index="1" class="fragment appear">Boolean Matrix Factorisation is a <b>simple and intuitive</b> model for binary observations.</li>
+<li data-fragment-index="2" class="fragment appear">The OrMachine: a <b>probabilistic</b> model with highly <b>scalable Bayesian inference</b>.</li>
+<li data-fragment-index="3" class="fragment appear">Outperforms state of the methods for Boolean matrix factorisation and completion.</li>
+<li data-fragment-index="4" class="fragment appear">Missing data and prior knowledge can easily be dealt with.</li>
+<li data-fragment-index="5" class="fragment appear">Multi-layer hierarchies can extract remaining structure, build interpretable hierarchies of abstraction and leverage on additional prior information</li>
 
 </ul>
+</div>
 </section>
 </section>
 <section>
