@@ -19,7 +19,7 @@
         document.getElementsByTagName( 'head' )[0].appendChild( link );
     }
 </script>
-<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML,mathjax_local"></script>
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 </head>
 <body>
 <div class="reveal">
@@ -131,17 +131,14 @@ $$\;\;\;\; = \sigma\left[\lambda \tilde{x}_{nd} \left(1-2\prod\limits_{l}(1-z_{n
 </div></section>
 <section id="slide-sec-2-1">
 <h3 id="sec-2-1">Full conditionals</h3>
-<div class="column" style="float:left; width: 50%">
+<div class="column" style="float:left; width: 60%">
 <ul>
 <li data-fragment-index="1" class="fragment appear">Likelihood: $$L = \prod\limits_{nd} \sigma\bigg[\lambda \tilde{x}_{nd} (1-2\prod\limits_{l}(1-z_{nl}u_{ld}) \bigg]$$</li>
-<li data-fragment-index="2" class="fragment appear">Full Conditional:</li>
-
-</ul>
-<p>
-$$ TeX: {extensions: ["color.js"]} p(z_{nl}|\text{rest}) = \sigma\bigg[\lambda \tilde{z}_{nl} \sum\limits_d \tilde{x}_{nd}\; \textcolor{blue}{u_{ld}}\prod\limits_{l'\neq l} (1-z_{nl'}u_{l'd})\bigg] $$
-</p>
+<li data-fragment-index="2" class="fragment appear">Full Conditional: $$ p(z_{nl}|\text{rest}) = \sigma\bigg[\lambda \tilde{z}_{nl} \sum\limits_d \tilde{x}_{nd}\; \color{darkgreen}{u_{ld}} \color{brown}{\prod\limits_{l'\neq l} (1-z_{nl'}u_{l'd})}\bigg] $$
 <ul data-fragment-index="3" class="fragment appear">
 <li>Intuition: Need to consider the full Markov Blanket.</li>
+
+</ul></li>
 
 </ul>
 <p>
@@ -150,14 +147,14 @@ $$ $$
 <ul>
 <li data-fragment-index="4" class="fragment appear"><b>Computational shortcut:</b> Two criteria to skip the remaining inner products
 <ul>
-<li data-fragment-index="5" class="fragment appear">\(u_{ld} = 0\) \(\rightarrow\) No effect of \(z_{nl}\) on the likelihood</li>
-<li data-fragment-index="6" class="fragment appear">\(z_{nl'}u_{l'd} = 1\) for \(l' \neq l\) \(\rightarrow\) \(x_{nd}\) is <b>explained away</b>.</li>
+<li data-fragment-index="5" class="fragment appear">\(\color{darkgreen}{u_{ld} = 0}\) &rarr; No effect of \(z_{nl}\) on the likelihood.</li>
+<li data-fragment-index="6" class="fragment appear">\(\color{brown}{z_{nl'}u_{l'd} = 1}\) for \(\color{brown}{l' \neq l}\) \(\rightarrow\) \(x_{nd}\) is <b>explained away</b>.</li>
 
 </ul></li>
 
 </ul>
 </div>
-<div class="column" style="float:left; width: 50%">
+<div class="column" style="float:left; width: 40%">
 
 <div class="figure">
 <p><img src="./single_layer_network.png" alt="single_layer_network.png" data-fragment-index="3" class="fragment appear" />

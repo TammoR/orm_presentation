@@ -92,21 +92,20 @@ $$\;\;\;\; = \sigma\left[\lambda \tilde{x}_{nd} \left(1-2\prod\limits_{l}(1-z_{n
 #+END_NOTES
 * Inference for the OrMachine
 ** Full conditionals
-#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+#+REVEAL_HTML: <div class="column" style="float:left; width: 60%">
 #+ATTR_REVEAL: :frag (appear appear) :frag_idx (1 2)
 - Likelihood: $$L = \prod\limits_{nd} \sigma\bigg[\lambda \tilde{x}_{nd} (1-2\prod\limits_{l}(1-z_{nl}u_{ld}) \bigg]$$
-- Full Conditional: 
-$$ TeX: {extensions: ["color.js"]} p(z_{nl}|\text{rest}) = \sigma\bigg[\lambda \tilde{z}_{nl} \sum\limits_d \tilde{x}_{nd}\; \textcolor{blue}{u_{ld}}\prod\limits_{l'\neq l} (1-z_{nl'}u_{l'd})\bigg] $$
+- Full Conditional: $$ p(z_{nl}|\text{rest}) = \sigma\bigg[\lambda \tilde{z}_{nl} \sum\limits_d \tilde{x}_{nd}\; \color{darkgreen}{u_{ld}} \color{brown}{\prod\limits_{l'\neq l} (1-z_{nl'}u_{l'd})}\bigg] $$
   #+ATTR_REVEAL: :frag appear :frag_idx 3
   - Intuition: Need to consider the full Markov Blanket.
 $$ $$
 #+ATTR_REVEAL: :frag (appear) :frag_idx (4)
 - *Computational shortcut:* Two criteria to skip the remaining inner products
   #+ATTR_REVEAL: :frag (appear appear) :frag_idx (5 6)
-  - $u_{ld} = 0$ $\rightarrow$ No effect of $z_{nl}$ on the likelihood
-  - $z_{nl'}u_{l'd} = 1$ for $l' \neq l$ $\rightarrow$ $x_{nd}$ is *explained away*.
+  - $\color{darkgreen}{u_{ld} = 0}$ \rightarrow No effect of $z_{nl}$ on the likelihood.
+  - $\color{brown}{z_{nl'}u_{l'd} = 1}$ for $\color{brown}{l' \neq l}$ $\rightarrow$ $x_{nd}$ is *explained away*.
 #+REVEAL_HTML: </div>
-#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+#+REVEAL_HTML: <div class="column" style="float:left; width: 40%">
 #+ATTR_REVEAL: :frag appear :frag_idx 3
 [[./single_layer_network.png]]
 #+REVEAL_HTML: </div>

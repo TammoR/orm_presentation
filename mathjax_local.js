@@ -1,3 +1,4 @@
 TeX: {
-  extensions: ["color.js"]
+    extensions: ["color.js"]
 }
+
