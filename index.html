@@ -33,20 +33,21 @@
 <h2 id="sec-1">Boolean Matrix Factorisation</h2>
 
 <div class="figure">
-<p><img src="./calc_digit_data.png" alt="calc_digit_data.png" class="fragment appear" width="40%" height="40%" />
+<p><img src="./calc_digit_data.png" alt="calc_digit_data.png" data-fragment-index="1" class="fragment appear" width="40%" height="40%" />
 </p>
 </div>
 
 <div class="figure">
-<p><img src="./calc_digit_factor.png" alt="calc_digit_factor.png" class="fragment appear" width="40%" height="40%" />
+<p><img src="./calc_digit_factor.png" alt="calc_digit_factor.png" data-fragment-index="2" class="fragment appear" width="40%" height="40%" />
 </p>
 </div>
-<span class="fragment appear"><p>
+<span class="fragment (appear)" data-fragment-index="2"><p>
+<p>
 Example
-</p></span>
+</p>
 
 <div class="figure">
-<p><img src="./calc_example.png" alt="calc_example.png" class="fragment appear" width="45%" height="45%" />
+<p><img src="./calc_example.png" alt="calc_example.png" data-fragment-index="2" class="fragment appear)" width="45%" height="45%" />
 </p>
 </div>
 </section>
@@ -76,15 +77,15 @@ Notation
 Definitions
 </p></span>
 <ul class="fragment appear">
-<li>Logistic sigmoid: \(\sigma(x) = (1+\exp[-x])^{-1}\)</li>
 <li>Mapping \(\{0,1\}\) to \(\{-1,1\}\): \(\tilde{x} = 2x-1\)</li>
+<li>Logistic sigmoid: \(\sigma(x) = (1+\exp[-x])^{-1}\)</li>
 
 </ul>
 </div>
 
 <div class="column" style="float:right; width: 100%">
 <span class="fragment appear"><p>
-$$  p(x_{nd}|\mathbf{u},\mathbf{z},\lambda)= \begin{cases} \sigma [ \lambda];\;&\text{if}\;x=\min(1,\mathbf{z}_n^T\mathbf{u}_d)\;\; \\ 1-\sigma [ \lambda]=\sigma[-\lambda];\;&\text{if}\;x\neq\min(1,\mathbf{z}_n^T\mathbf{u}_d)    \end{cases}
+$$  p(x_{nd}|\mathbf{u}_d,\mathbf{z}_n,\lambda)= \begin{cases} \sigma [ \lambda];\;&\text{if}\;x_{nd}=\min(1,\mathbf{z}_n^T\mathbf{u}_d)\;\; \\ 1-\sigma [ \lambda]=\sigma[-\lambda];\;&\text{if}\;x_{nd}\neq\min(1,\mathbf{z}_n^T\mathbf{u}_d)    \end{cases}
 $$
 </p></span>
 <span class="fragment appear"><p>
@@ -113,10 +114,10 @@ $$\;\;\;\; = \sigma\left[\lambda \tilde{x}_{nd} \left(1-2\prod\limits_{l}(1-z_{n
 <h3 id="sec-2-1">Full conditionals</h3>
 <div class="column" style="float:left; width: 50%">
 <ul>
-<li data-fragment-index="1" class="fragment appear">Likelihood: $$L = \sigma\bigg[\lambda \tilde{x}_{nd} (1-2\prod\limits_{l}(1-z_{nl}u_{ld}) \bigg]$$</li>
+<li data-fragment-index="1" class="fragment appear">Likelihood: $$L = \prod\limits_{nd} \sigma\bigg[\lambda \tilde{x}_{nd} (1-2\prod\limits_{l}(1-z_{nl}u_{ld}) \bigg]$$</li>
 <li data-fragment-index="2" class="fragment appear">Full Conditional: $$ p(z_{nl}|\text{rest}) = \sigma\bigg[\lambda \tilde{z}_{nl} \sum\limits_d \tilde{x}_{nd}\; u_{ld}\prod\limits_{l'\neq l} (1-z_{nl'}u_{l'd})\bigg] $$
 <ul data-fragment-index="3" class="fragment appear">
-<li>Intuition: Need to consider the full Markov Blanket including <i>explaining away</i> dependencies.</li>
+<li>Intuition: Need to consider the full Markov Blanket.</li>
 
 </ul></li>
 
@@ -128,7 +129,7 @@ $$ $$
 <li data-fragment-index="4" class="fragment appear"><b>Computational shortcut:</b> Two criteria to skip the remaining inner products
 <ul>
 <li data-fragment-index="5" class="fragment appear">\(u_{ld} = 0\) \(\rightarrow\) No effect of \(z_{nl}\) on the likelihood</li>
-<li data-fragment-index="6" class="fragment appear">\(z_{nl'}u_{l'd} = 1\) for \(l' \neq l\) \(\rightarrow\) \(x_{nd}\) is <i>explained away</i>.</li>
+<li data-fragment-index="6" class="fragment appear">\(z_{nl'}u_{l'd} = 1\) for \(l' \neq l\) \(\rightarrow\) \(x_{nd}\) is <b>explained away</b>.</li>
 
 </ul></li>
 
@@ -165,20 +166,12 @@ $$ \sigma(\lambda)_{\text{mle}} =\frac{P}{ND}\;. $$
 </p>
 </section>
 <section id="slide-sec-2-4">
-<h3 id="sec-2-4">Metropolised Gibbs sampler - Algorithm</h3>
-
-<div class="figure">
-<p><img src="./alg2_mod.png" alt="alg2_mod.png" width="50%" height="60%" />
-</p>
-</div>
-</section>
-<section id="slide-sec-2-5">
-<h3 id="sec-2-5">A modified binary state Gibbs sampler</h3>
+<h3 id="sec-2-4">A modified binary state Gibbs sampler</h3>
 <ul>
-<li data-fragment-index="1" class="fragment appear">Old state \(\mathbf{x}\), new state \(\mathbf{y}\).</li>
-<li data-fragment-index="2" class="fragment appear">Gibbs sampler: Draw a new value from the full conditional \(p(y|\text{rest})\), acceptance probability 1.</li>
-<li data-fragment-index="3" class="fragment appear">Here, we draw \(y\) <b>different from the</b> \(x\) with probability 1.</li>
-<li data-fragment-index="4" class="fragment appear">Metropolis-Hasting acceptance probability: $$ \frac{p(y|\text{rest}) q(x|y)}{p(x|\text{rest}) q(y|x)} = \frac{p(y|\text{rest})}{1-p(y|\text{rest})} \ge p(y|\text{rest})$$</li>
+<li data-fragment-index="1" class="fragment appear">Old state: \(\mathbf{x}\), new state: \(\mathbf{y}\).</li>
+<li data-fragment-index="2" class="fragment appear">Gibbs sampler: Draw a new value from the full conditional \(p(y|\text{rest})\).</li>
+<li data-fragment-index="3" class="fragment appear">Here, we propose value \(y\) <b>different from the</b> \(x\) with probability 1.</li>
+<li data-fragment-index="4" class="fragment appear">Metropolis-Hasting acceptance probability equals mutatoin probability: $$ \frac{p(y|\text{rest}) q(x|y)}{p(x|\text{rest}) q(y|x)} = \frac{p(y|\text{rest})}{1-p(y|\text{rest})} \ge p(y|\text{rest})$$</li>
 
 </ul>
 
@@ -201,6 +194,14 @@ $$ \sigma(\lambda)_{\text{mle}} =\frac{P}{ND}\;. $$
 
 </ul>
 </section>
+<section id="slide-sec-2-5">
+<h3 id="sec-2-5">Metropolised Gibbs sampler - Algorithm</h3>
+
+<div class="figure">
+<p><img src="./alg2_mod.png" alt="alg2_mod.png" width="50%" height="60%" />
+</p>
+</div>
+</section>
 </section>
 <section>
 <section id="slide-sec-3">
@@ -215,7 +216,6 @@ $$ $$
 <img src="./mp.png" alt="mp.png" />
 </p>
 <ul>
-<li>A similar probabilistic model.</li>
 <li>MAP inference using message passing.</li>
 <li>Outperforms all previous state-of-the-art methods.</li>
 
@@ -236,16 +236,16 @@ $$ $$
 <section id="slide-sec-3-2">
 <h3 id="sec-3-2">Random matrix completion</h3>
 <ul>
-<li data-fragment-index="1" class="fragment appear">Handling missing data is easy.Set an unobserved data-point \(x_{nd} = 0.5 \;\rightarrow\; \tilde{x}_{nd}=0\)</li>
+<li data-fragment-index="1" class="fragment appear">Missing dat? Set unobserved data-point to \(x_{nd} = 0.5 \;\rightarrow\; \tilde{x}_{nd}=0\)</li>
 
 </ul>
 <span class="fragment (appear)" data-fragment-index="2"><p>
 <p>
-$$L = \prod\limits_{nd} \sigma\left[\lambda \tilde{x}_{nd} (1-2\prod\limits_{l}(1-z_{nl}u_{ld}) \right]\;\;\;\rightarrow\text{Contribute constant factor}\;\sigma(0)=\frac{1}{2}$$ 
+$$L = \prod\limits_{nd} \sigma\left[\lambda \tilde{x}_{nd} (1-2\prod\limits_{l}(1-z_{nl}u_{ld}) \right]\;\;\rightarrow\;\text{Contribute constant factor}\;\sigma(0)=\frac{1}{2}$$ 
 </p>
 <span class="fragment (appear)" data-fragment-index="3"><p>
 <p>
-$$ p(z_{nl}|\text{rest}) = \sigma\left[\lambda \tilde{z}_{nl} \sum\limits_d \tilde{x}_{nd}\; u_{ld}\prod\limits_{l'\neq l} (1-z_{nl'}u_{l'd})\right]\;\;\;\rightarrow \text{No contribution} $$
+$$ p(z_{nl}|\text{rest}) = \sigma\left[\lambda \tilde{z}_{nl} \sum\limits_d \tilde{x}_{nd}\; u_{ld}\prod\limits_{l'\neq l} (1-z_{nl'}u_{l'd})\right]\;\;\rightarrow\; \text{No contribution} $$
 </p>
 <div class="column" style="float:left; width: 50%">
 
@@ -265,11 +265,10 @@ $$ p(z_{nl}|\text{rest}) = \sigma\left[\lambda \tilde{z}_{nl} \sum\limits_d \til
 <section id="slide-sec-3-3">
 <h3 id="sec-3-3">MovieLense</h3>
 <div class="column" style="float:left; width: 50%">
-
-<div class="figure">
-<p><img src="./movielense1.png" alt="movielense1.png" width="85%" height="50%" />
+<p>
+<img src="./movielense1.png" alt="movielense1.png" width="85%" height="50%" />
+Percentages of correctly predicted, unobserved movie ratings.
 </p>
-</div>
 </div>
 <div class="column" style="float:left; width: 50%">
 
@@ -284,7 +283,7 @@ $$ p(z_{nl}|\text{rest}) = \sigma\left[\lambda \tilde{z}_{nl} \sum\limits_d \til
 <div class="outline-text-3" id="text-3-4">
 </div></section>
 <section id="slide-sec-3-4-1">
-<h4 id="sec-3-4-1">Calculator digits</h4>
+<h4 id="sec-3-4-1">Calculator Digit Hierarchy</h4>
 
 <div class="figure">
 <p><img src="./calc_hierarchy_feb21.png" alt="calc_hierarchy_feb21.png" />
@@ -296,18 +295,15 @@ $$ p(z_{nl}|\text{rest}) = \sigma\left[\lambda \tilde{z}_{nl} \sum\limits_d \til
 </ul>
 </section>
 <section id="slide-sec-3-4-2">
-<h4 id="sec-3-4-2">Gene patterns</h4>
+<h4 id="sec-3-4-2">Gene patterns &#x2013; Cell representations</h4>
 
 <div class="figure">
-<p><img src="./mice_neurons1.png" alt="mice_neurons1.png" width="90%" height="50%" />
+<p><img src="./mice_neurons1.png" alt="mice_neurons1.png" width="80%" height="50%" />
 </p>
 </div>
-</section>
-<section id="slide-sec-3-4-3">
-<h4 id="sec-3-4-3">Specimen representations</h4>
 
 <div class="figure">
-<p><img src="./mice_neurons2.png" alt="mice_neurons2.png" width="90%" height="50%" />
+<p><img src="./mice_neurons2.png" alt="mice_neurons2.png" data-fragment-index="1" class="fragment appear" width="80%" height="50%" />
 </p>
 </div>
 </section>
@@ -368,7 +364,7 @@ $$ p(z_{nl}|\text{rest}) = \sigma\left[\lambda \tilde{z}_{nl} \sum\limits_d \til
 <li>Boolean Matrix Factorisation is a simple and intuitive model for binary observations.</li>
 <li>The OrMachine is a probabilistic model with highly scalable Bayesian inference.</li>
 <li>Missing data and prior knowledge can easily be dealt with.</li>
-<li>Multi-layer hierarchies can extract remaining correlations and provide a novel way to include additional information</li>
+<li>Multi-layer hierarchies can extract remaining correlations and are used to leverage label information.</li>
 
 </ul>
 </section>
