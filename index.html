@@ -132,13 +132,11 @@ $$\;\;\;\; = \sigma\left[\lambda \tilde{x}_{nd} \left(1-2\color{brown}{\prod\lim
 <section id="slide-sec-2-1">
 <h3 id="sec-2-1">Full conditionals</h3>
 <div class="column" style="float:left; width: 60%">
-<ul>
-<li data-fragment-index="1" class="fragment appear">Likelihood: $$L = \prod\limits_{nd} \sigma\bigg[\lambda \tilde{x}_{nd} (1-2\prod\limits_{l}(1-z_{nl}u_{ld}) \bigg]$$</li>
-<li data-fragment-index="2" class="fragment appear">Full Conditional: $$ p(z_{nl}|\text{rest}) = \sigma\bigg[\lambda \tilde{z}_{nl} \sum\limits_d \tilde{x}_{nd}\; \color{darkgreen}{u_{ld}} \color{brown}{\prod\limits_{l'\neq l} (1-z_{nl'}u_{l'd})}\bigg] $$
+<p>
+$$ p(z_{nl}|\text{rest}) = \sigma\bigg[\lambda \tilde{z}_{nl} \sum\limits_d \tilde{x}_{nd}\; \color{darkgreen}{u_{ld}} \color{brown}{\prod\limits_{l'\neq l} (1-z_{nl'}u_{l'd})}\bigg] $$
+</p>
 <ul data-fragment-index="3" class="fragment appear">
 <li>Intuition: Need to consider the full Markov Blanket.</li>
-
-</ul></li>
 
 </ul>
 <p>
@@ -161,16 +159,14 @@ $$ $$
 </p>
 </div>
 </div>
-
 </section>
 <section id="slide-sec-2-2">
 <h3 id="sec-2-2">A modified binary state Gibbs sampler</h3>
 <div class="column" style="float:left; width: 100%">
-<ul class="fragment appear">
-<li>Old state: \(\mathbf{x}\), new state: \(\mathbf{y}\).</li>
-<li>Gibbs sampler: Draw a new value from the full conditional \(p(y|\text{rest})\).</li>
-<li>Here, we propose value \(y\) <b>different from the</b> \(x\) with probability 1.</li>
-<li>Metropolis-Hasting: $$ p(\text{accept}) = p(\text{mutate})= \frac{p(y|\text{rest}) q(x|y)}{p(x|\text{rest}) q(y|x)} = \frac{p(y|\text{rest})}{1-p(y|\text{rest})} \ge p(y|\text{rest})$$</li>
+<ul>
+<li>Gibbs sampler: Draw a new value z' from the full conditional \(p(z'|\text{rest})\).</li>
+<li>Here, we propose value \(z'\) <b>different from the</b> previous value \(z\) with probability 1.</li>
+<li>Metropolis-Hasting: $$ p(\text{accept}) = p(\text{mutate})= \frac{p(z'|\text{rest}) q(z|z')}{p(z|\text{rest}) q(z'|z)} = \frac{p(z'|\text{rest})}{1-p(z'|\text{rest})} \ge p(z'|\text{rest})$$</li>
 
 </ul>
 
@@ -196,29 +192,34 @@ $$ $$
 
 </section>
 <section id="slide-sec-2-3">
-<h3 id="sec-2-3">Dispersion paramter \(\lambda\)</h3>
+<h3 id="sec-2-3">Inference: Monte-Carlo EM Algorithm</h3>
 <div class="column" style="float:left; width: 100%">
+<div class="column" style="float:centre; align=centre">
 <ul>
-<li>How many entries are correctly predicted by the deterministic Boolean product $$ P = \sum\limits_{n,d} I\left[x_{nd}=(1-2\prod\limits_{l}(1-z_{nl}u_{ld})\right] $$</li>
-<li>We can rewrite the likelihood
-$$ L = \sigma(\lambda)^P \sigma(-\lambda)^{(ND-P)} $$</li>
-<li>We find the MLE of \(\sigma(\lambda)\) in <b>closed form</b>:</li>
+<li><code>Until stopping criterion is reached</code>
+  $$ $$
+<ul>
+<li><code>For each factor matrix entry</code> \(u_{ld}, z_{nl}\) <code>[in parallel]</code>
+<ul>
+<li><code>Compute full conditional (using shortcuts)</code></li>
+<li><code>Update entry following Metropolised Gibbs sampler</code></li>
+
+</ul></li>
 
 </ul>
 <p>
-$$ \sigma(\lambda)_{\text{mle}} =\frac{P}{ND}\;. $$
+$$ $$
 </p>
-</div>
-</section>
-<section id="slide-sec-2-4">
-<h3 id="sec-2-4">Metropolised Gibbs sampler - Algorithm</h3>
-<div class="column" style="float:left; width: 100%">
+<ul>
+<li><code>Set</code> \(\sigma(\lambda)\) <code>to its MLE</code> 
+   \(\big[\sigma(\lambda)_{\text{mle}}=\) <code>MAP reconstruction accuracy</code> \(\big]\)</li>
 
-<div class="figure">
-<p><img src="./alg2_mod.png" alt="alg2_mod.png" width="50%" height="60%" />
-</p>
+</ul></li>
+
+</ul>
 </div>
 </div>
+
 </section>
 </section>
 <section>
@@ -250,7 +251,7 @@ $$ \sigma(\lambda)_{\text{mle}} =\frac{P}{ND}\;. $$
 </p>
 
 <div class="figure">
-<p><img src="./completion1.png" alt="completion1.png" data-fragment-index="2" class="fragment appear" width="75%" height="50%" />
+<p><img src="./completion1.png" alt="completion1.png" data-fragment-index="2" class="fragment appear" width="65%" height="50%" />
 </p>
 </div>
 <span class="fragment (appear)" data-fragment-index="3"><p>
@@ -259,7 +260,7 @@ Density of posterior means
 </p>
 
 <div class="figure">
-<p><img src="./completion2.png" alt="completion2.png" data-fragment-index="3" class="fragment appear" width="75%" height="50%" />
+<p><img src="./completion2.png" alt="completion2.png" data-fragment-index="3" class="fragment appear" width="65%" height="50%" />
 </p>
 </div>
 </div>
@@ -287,12 +288,12 @@ Density of posterior means
 <div class="column" style="float:left; width: 100%">
 
 <div class="figure">
-<p><img src="./mice_neurons1.png" alt="mice_neurons1.png" width="80%" height="50%" />
+<p><img src="./mice_neurons1.png" alt="mice_neurons1.png" width="73%" height="50%" />
 </p>
 </div>
 
 <div class="figure">
-<p><img src="./mice_neurons2.png" alt="mice_neurons2.png" data-fragment-index="1" class="fragment appear" width="80%" height="50%" />
+<p><img src="./mice_neurons2.png" alt="mice_neurons2.png" data-fragment-index="1" class="fragment appear" width="73%" height="50%" />
 </p>
 </div>
 </div>
@@ -313,7 +314,7 @@ Density of posterior means
 </div>
 </section>
 <section id="slide-sec-3-4">
-<h3 id="sec-3-4">Pancan and pathway data</h3>
+<h3 id="sec-3-4">Mutations and Cellular Pathways in Different Cancer Types</h3>
 <div class="outline-text-3" id="text-3-4">
 </div></section>
 <section id="slide-sec-3-4-1">
@@ -327,31 +328,11 @@ Density of posterior means
 </div>
 </section>
 <section id="slide-sec-3-4-2">
-<h4 id="sec-3-4-2">"Data"</h4>
-<div class="column" style="float:left; width: 100%">
-
-<div class="figure">
-<p><img src="./pancan_data.png" alt="pancan_data.png" width="80%" height="80%" />
-</p>
-</div>
-</div>
-</section>
-<section id="slide-sec-3-4-3">
-<h4 id="sec-3-4-3">Embedding</h4>
+<h4 id="sec-3-4-2">Embedding</h4>
 <div class="column" style="float:left; width: 100%">
 
 <div class="figure">
 <p><img src="./pancan_representations.png" alt="pancan_representations.png" width="75%" height="75%" />
-</p>
-</div>
-</div>
-</section>
-<section id="slide-sec-3-4-4">
-<h4 id="sec-3-4-4">Clustering via one-hot activations</h4>
-<div class="column" style="float:left; width: 100%">
-
-<div class="figure">
-<p><img src="./pancan_clustering.png" alt="pancan_clustering.png" width="60%" height="60%" />
 </p>
 </div>
 </div>
@@ -363,13 +344,14 @@ Density of posterior means
 <div class="column" style="float:left; width: 100%">
 <ul>
 <li data-fragment-index="1" class="fragment appear">Boolean Matrix Factorisation is a <b>simple and intuitive</b> model for binary observations.</li>
-<li data-fragment-index="2" class="fragment appear">The OrMachine: a <b>probabilistic</b> model with highly <b>scalable Bayesian inference</b>.</li>
+<li data-fragment-index="2" class="fragment appear">The OrMachine: a <b>probabilistic</b> approach with highly <b>scalable Bayesian inference</b>.</li>
 <li data-fragment-index="3" class="fragment appear">Outperforms state of the methods for Boolean matrix factorisation and completion.</li>
-<li data-fragment-index="4" class="fragment appear">Missing data and prior knowledge can easily be dealt with.</li>
-<li data-fragment-index="5" class="fragment appear">Multiple-layers of factorisation can extract remaining structure, build interpretable hierarchies of abstraction and leverage on additional prior information</li>
+<li data-fragment-index="4" class="fragment appear">Missing data and prior knowledge can easily be integrated.</li>
+<li data-fragment-index="5" class="fragment appear">Multi-layer architectures can extract remaining structure, build interpretable hierarchies that leverage various data views.</li>
 
 </ul>
 </div>
+
 </section>
 </section>
 <section>
@@ -680,6 +662,54 @@ $$ p(z_{nl}|\text{rest}) = \sigma\left[\lambda \tilde{z}_{nl} \sum\limits_d \til
 
 <div class="figure">
 <p><img src="./completion2.png" alt="completion2.png" data-fragment-index="5" class="fragment appear" width="85%" height="50%" />
+</p>
+</div>
+</div>
+</section>
+<section id="slide-sec-5-17">
+<h3 id="sec-5-17">Dispersion paramter \(\lambda\)</h3>
+<div class="column" style="float:left; width: 100%">
+<p>
+$$ $$
+</p>
+<ul>
+<li>How many entries are correctly predicted by the deterministic Boolean product? $$ P = \sum\limits_{n,d} I\left[x_{nd}=(1-2\prod\limits_{l}(1-z_{nl}u_{ld}))\right] $$</li>
+<li>We can rewrite the likelihood
+$$ L = \sigma(\lambda)^P \sigma(-\lambda)^{(ND-P)} $$</li>
+<li>We find the MLE of \(\sigma(\lambda)\) in <b>closed form</b>:</li>
+
+</ul>
+<p>
+$$ \sigma(\lambda)_{\text{mle}} =\frac{P}{ND}\;. $$
+</p>
+</div>
+</section>
+<section id="slide-sec-5-18">
+<h3 id="sec-5-18">Metropolised Gibbs sampler - Algorithm</h3>
+<div class="column" style="float:left; width: 100%">
+
+<div class="figure">
+<p><img src="./alg2_mod.png" alt="alg2_mod.png" width="50%" height="60%" />
+</p>
+</div>
+</div>
+</section>
+<section id="slide-sec-5-19">
+<h3 id="sec-5-19">"Data"</h3>
+<div class="column" style="float:left; width: 100%">
+
+<div class="figure">
+<p><img src="./pancan_data.png" alt="pancan_data.png" width="80%" height="80%" />
+</p>
+</div>
+</div>
+</section>
+<section id="slide-sec-5-20">
+<h3 id="sec-5-20">Clustering via one-hot activations</h3>
+<div class="column" style="float:left; width: 100%">
+
+<div class="figure">
+<p><img src="./pancan_clustering.png" alt="pancan_clustering.png" width="60%" height="60%" />
 </p>
 </div>
 </div>
