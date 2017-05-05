@@ -19,7 +19,7 @@
         document.getElementsByTagName( 'head' )[0].appendChild( link );
     }
 </script>
-<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML,mathjax_local"></script>
 </head>
 <body>
 <div class="reveal">
@@ -28,50 +28,58 @@
 <h1>The OrMachine</h1><br><br><br><br><br><h2>Bayesian Boolen matrix factorisation</h2>
 </section>
 
+
 <section>
 <section id="slide-sec-1">
-<h2 id="sec-1">The Data Revolution in Biology</h2>
+<h2 id="sec-1">Unsupervised learning</h2>
 <div class="column" style="float:left; width: 100%">
-<p>
-Rapid increase in the availability of <b>large molecular datasets</b>!
-</p>
 <span class="fragment (appear)" data-fragment-index="1"><p>
 <p>
-$$\color{red}{\Large\mathbf{\downarrow}}$$
+<div align="left"> &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;&nbsp;&nbsp; Key requirements </div>
 </p>
-<span class="fragment (appear)" data-fragment-index="1"><p>
-<p>
-Better understanding of disease and <b>better healthcare</b>?
-$$ $$
-</p>
-<span class="fragment (appear)" data-fragment-index="2"><p>
-<p>
-Need computational and statistical tools that
-</p>
-<span class="fragment (appear)" data-fragment-index="2"><p>
-<ol>
-<li><b>Scale</b> to the huge datastes</li>
-<li>Relate to the <b>physical and biological mechanisms</b> that generate the data</li>
-<li>Can leverage on prior <b>expert domain knowledge</b></li>
-<li>Are easy to <b>interprete</b></li>
+<ul>
+<li data-fragment-index="1" class="fragment appear">&#x2026; <b>interpretable</b></li>
+<li data-fragment-index="2" class="fragment appear">&#x2026; relate to the physical <b>data-generating mechanism</b>.</li>
+<li data-fragment-index="3" class="fragment appear">&#x2026; ability to utilise <b>prior expert knowledge</b>.</li>
+<li data-fragment-index="4" class="fragment appear">&#x2026; <b>scalable</b></li>
 
-</ol>
+</ul>
 </div>
+
 <aside class="notes">
+<ul class="org-ul">
+<li>Joint work with CY, MT and CH.
+</li>
+<li>Started out my PhD wanting to develop model for unsupervised learning
+</li>
+<li>The goal is to undertstand processes that underly high dimensional heterogeneous datasets
+</li>
+<li>Focus on Genomics, where the abundance of molecular data needs to be translated into understanding of disease and better healthcare
+</li>
+<li>Key requirements
+</li>
+</ul>
+
 <p>
-A data revolution has been going on for a while in Biology. Based on a rapidly declining cost of Genome sequencing techniques; on new experimantel techniques such as single cell sequencing; and on recent population scale studies we have tremendous amounts of molecular data for biomedical research.
-Such data promises the precise understanding of the molecular basis of diseases, development targeted therapies and ultimately better healthcare
+When I started my PhD research about 1 1/2 years ago, I was interested in unsupervised learning. I wanted to develope latent variable models and inference to work with large, complicated, noisy data sets. In particular, models that can help to build an intuition about the data generating processes and that enable us to derive scientific insights from the data. This is said mostly with Genomics data in mind, but applies in general.
 </p>
 
 <p>
-But to live up to this promise, we need tools that enable reseaercher to draw meaningful conclusioncs from such datasets. In particular we need statistical and computational models, that fullfill the following criteria. They need to scale to the enormous amounts of data, that can relate to the underlying physical mechanisms, they are able to leverage on the prior expert domain knowledge, and that are easily interpretable.
+Over the course of this work I identified four requirements that such a needs to meet.
 </p>
+<ul class="org-ul">
+<li>interpretability: intuitive understaing for latent variables, need to quantify uncertainty
+</li>
+<li>physical mechanism: depends on the application. observations and meaningful latent properties are usually digital, e.g. presence/absence of disease or mutation; customer buying or not buying a product, the colour in a region of an image etc.
+</li>
+<li>prior knowledge: especially in biology we already know a lot, not everything needs to be inferred from the data.
+</li>
+<li>scalability
+</li>
+</ul>
 
 <p>
-In order for latent variables to be interpretable in this setting, they will often need to be categorical or binary. For instance indicating the presence or absence of disease, or disruption of a cellular pathway process.
-Latent variable models play an 
-That's why I would like to introduce you to the OrMachine. 
-The OrMachine is fully binary latent variable model, that is based on Boolen Matrix factorisatoin.
+Played with a variety of models, but the following really fulfills all these requirements.
 </p>
 
 </aside>
@@ -119,6 +127,22 @@ Example
 </p>
 </div>
 </div>
+
+<aside class="notes">
+<ul class="org-ul">
+<li>What is BooMF? The approximation of a binary data matrix as product of two low rank binary matrices.
+</li>
+<li>Like a regular matrix product but thresholded.
+</li>
+<li>Essentially the model learns the seperate bars from which every digit can be composed. We call them <i>codes</i>
+</li>
+<li>The L-dimensional indicator Z provides the compact representation of which codes are allocated to each observation.
+</li>
+<li>Similarity to noisy-OR
+</li>
+</ul>
+
+</aside>
 </section>
 <section id="slide-sec-2-1">
 <h3 id="sec-2-1">Probabilistic Generative Model</h3>
@@ -131,21 +155,21 @@ Example
 </div>
 
 <div class="column" style="float:right; width: 55%">
-<span class="fragment (appear appear) :frag_idx(1)"><p>
+<p>
 Notation
-</p></span>
-<ul class="fragment appear">
+</p>
+<ul>
 <li>\({x_{nd}}\) &#x2013; observations</li>
-<li>\({u_{ld}}\) &#x2013; codes (globale variables)</li>
-<li>\({z_{nl}}\) &#x2013; latent variables (local variables)</li>
+<li>\({u_{ld}}\) &#x2013; factor matrix: global codes</li>
+<li>\({z_{nl}}\) &#x2013; factor matrix: local latent variables</li>
 <li>\(\lambda \ge 0\) &#x2013; global noise parameter</li>
 
 </ul>
 
-<span class="fragment (appear) :frag_idx(2)"><p>
+<p>
 Definitions
-</p></span>
-<ul class="fragment appear">
+</p>
+<ul>
 <li>Mapping \(\{0,1\}\) to \(\{-1,1\}\): \(\tilde{x} = 2x-1\)</li>
 <li>Logistic sigmoid: \(\sigma(x) = (1+\exp[-x])^{-1}\)</li>
 
@@ -177,90 +201,85 @@ $$\;\;\;\; = \sigma\left[\lambda \tilde{x}_{nd} \left(1-2\color{brown}{\prod\lim
 <section>
 <section id="slide-sec-3">
 <h2 id="sec-3">Inference for the OrMachine</h2>
-<div class="outline-text-2" id="text-3">
-</div></section>
-<section id="slide-sec-3-1">
-<h3 id="sec-3-1">Full conditionals</h3>
+<p>
+<b>Fast Gibbs Sampling</b>
+</p>
+<div class="column" style="float:left; width: 100%">
 <div class="column" style="float:left; width: 60%">
+<span class="fragment (appear)" data-fragment-index="1"><p>
+<p>
+Full conditional
+</p>
+<span class="fragment (appear)" data-fragment-index="1"><p>
 <p>
 $$ p(z_{nl}|\text{rest}) = \sigma\bigg[\lambda \tilde{z}_{nl} \sum\limits_d \tilde{x}_{nd}\; \color{darkgreen}{u_{ld}} \color{brown}{\prod\limits_{l'\neq l} (1-z_{nl'}u_{l'd})}\bigg] $$
 </p>
-<ul data-fragment-index="3" class="fragment appear">
-<li>Intuition: Need to consider the full Markov Blanket.</li>
-
-</ul>
-<p>
-$$ $$
-</p>
-<ul>
-<li data-fragment-index="4" class="fragment appear"><b>Computational shortcut:</b>
-<ul>
-<li data-fragment-index="5" class="fragment appear">\(\color{darkgreen}{u_{ld} = 0}\) &rarr; No effect of \(z_{nl}\) on the likelihood.</li>
-<li data-fragment-index="6" class="fragment appear">\(\color{brown}{z_{nl'}u_{l'd} = 1}\) for \(\color{brown}{l' \neq l}\) \(\rightarrow\) \(x_{nd}\) is <b>explained away</b>.</li>
-
-</ul></li>
-
-</ul>
 </div>
-<div class="column" style="float:left; width: 40%">
 
-<div class="figure">
-<p><img src="./single_layer_network.png" alt="single_layer_network.png" data-fragment-index="3" class="fragment appear" />
-</p>
-</div>
-</div>
-<aside class="notes">
-<ul class="org-ul">
-<li>Prior knowledege by setting x=0.5
-</li>
-</ul>
-
-</aside>
-</section>
-<section id="slide-sec-3-2">
-<h3 id="sec-3-2">Metropolised Gibbs sampler and \(\lambda\) MLE</h3>
-<div class="column" style="float:left; width: 100%">
-<span class="fragment (appear)" data-fragment-index="1"><p>
-<p>
-<b>Modified Sampler &#x2013; Intuition</b>
-</p>
+<div class="column" style="float:left; width: 35%">
 <span class="fragment (appear)" data-fragment-index="2"><p>
-<ul>
-<li>Standard Gibbs sampler:
-
 <p>
-<img src="./heads_small.png" alt="heads_small.png" />   <img src="./heads_small.png" alt="heads_small.png" />  <img src="./heads_small.png" alt="heads_small.png" />  <img src="./tails_small.png" alt="tails_small.png" />  <img src="./heads_small.png" alt="heads_small.png" /> 
- <img src="./tails_small.png" alt="tails_small.png" />  <img src="./tails_small.png" alt="tails_small.png" />  <img src="./heads_small.png" alt="heads_small.png" />  <img src="./tails_small.png" alt="tails_small.png" />  <img src="./heads_small.png" alt="heads_small.png" />  <img src="./heads_small.png" alt="heads_small.png" /> <img src="./tails_small.png" alt="tails_small.png" /> 
-</p></li>
+Computational shortcuts
+</p>
+<ul>
+<li>\(\color{darkgreen}{u_{ld} = 0}\) <br> &rarr; \(z_{nl}\) and \(x_{nd}\) <i>disconnected</i>.</li>
+<li>\(\color{brown}{z_{nl'}u_{l'd} = 1}\) for \(\color{brown}{l' \neq l}\) <br> &rarr; \(x_{nd}\) is <i>explained away</i>.</li>
 
 </ul>
+</div>
+
 <span class="fragment (appear)" data-fragment-index="3"><p>
-<ul>
-<li>Metropolised Gibbs sampler:
-
-<p>
-<img src="./heads_small.png" alt="heads_small.png" />  <img src="./tails_small.png" alt="tails_small.png" />   <img src="./heads_small.png" alt="heads_small.png" />  <img src="./tails_small.png" alt="tails_small.png" />  <img src="./heads_small.png" alt="heads_small.png" />  <img src="./tails_small.png" alt="tails_small.png" />  <img src="./heads_small.png" alt="heads_small.png" />  <img src="./tails_small.png" alt="tails_small.png" />  <img src="./heads_small.png" alt="heads_small.png" />  <img src="./tails_small.png" alt="tails_small.png" />  <img src="./heads_small.png" alt="heads_small.png" />  <img src="./tails_small.png" alt="tails_small.png" />
-</p></li>
-
-</ul>
-<span class="fragment (appear)" data-fragment-index="4"><p>
 <p>
 <b>Dispersion Parameter to Maximise Likelihood</b>
 </p>
-<span class="fragment (appear)" data-fragment-index="4"><p>
+<span class="fragment (appear)" data-fragment-index="3"><p>
 <p>
-$$ \sigma(\lambda)_{\text{MLE}} = \frac{\text{# of correctly reconstructed data points}}{\text{# of data points}} = \text{reconstruction accuracy}$$
+$$ \sigma(\lambda)_{\text{MLE}} = \frac{\text{No. of correctly reconstructed data points}}{\text{No. of data points}} $$
 </p>
 </div>
+
+<div class="column" style="float:left; width: 100%">
+<span class="fragment (appear)" data-fragment-index="4"><p>
+<p>
+<b>Modified Sampler &#x2013; Always propose to change</b>
+</p>
+<div class="column" style="float:left; width: 50%">
+<span class="fragment (appear)" data-fragment-index="4"><p>
+<p>
+Standard Gibbs sampler <br> 
+  <img src="./heads_smaller.png" alt="heads_smaller.png" />   <img src="./heads_smaller.png" alt="heads_smaller.png" />  <img src="./heads_smaller.png" alt="heads_smaller.png" />  <img src="./tails_smaller.png" alt="tails_smaller.png" />  <img src="./heads_smaller.png" alt="heads_smaller.png" /> 
+ <img src="./tails_smaller.png" alt="tails_smaller.png" />  <img src="./tails_smaller.png" alt="tails_smaller.png" />  <img src="./heads_smaller.png" alt="heads_smaller.png" />  <img src="./tails_smaller.png" alt="tails_smaller.png" /> 
+</p>
+</div>
+<div class="column" style="float:left; width: 50%">
+<span class="fragment (appear)" data-fragment-index="4"><p>
+<p>
+Metropolised Gibbs sampler <br> 
+  <img src="./heads_smaller.png" alt="heads_smaller.png" />  <img src="./tails_smaller.png" alt="tails_smaller.png" />   <img src="./heads_smaller.png" alt="heads_smaller.png" />  <img src="./tails_smaller.png" alt="tails_smaller.png" />  <img src="./heads_smaller.png" alt="heads_smaller.png" />  <img src="./tails_smaller.png" alt="tails_smaller.png" />  <img src="./heads_smaller.png" alt="heads_smaller.png" />  <img src="./tails_smaller.png" alt="tails_smaller.png" />  <img src="./heads_smaller.png" alt="heads_smaller.png" />
+</p>
+</div>
+
+
 <aside class="notes">
 <ul class="org-ul">
-<li>Lambda is available in closed form
+<li>Conditional takes a surprisingly simple form
 </li>
-<li>Monte Carlo EM fashion
+<li>Think if this as a neural net without nonlinearity
+</li>
+<li>Normally need to consider <b>full Markov blanket</b>
+</li>
+<li><b>Missing data</b> easy setting x=0.5
+</li>
+<li><b>Prior knowledge</b> by clamping variables
+</li>
+<li>Parallelisable
+</li>
+<li>Set lambda to MLE after every sweep through u/z in <b>Monte Carlo EM fashion</b>
 </li>
 </ul>
 
 </aside>
+
 
 </section>
 </section>
@@ -306,6 +325,15 @@ Density of posterior means
 </p>
 </div>
 </div>
+<aside class="notes">
+<ul class="org-ul">
+<li>Compare to state of the art
+</li>
+<li>Movie lense results are in the paper
+</li>
+</ul>
+
+</aside>
 </section>
 <section id="slide-sec-4-2">
 <h3 id="sec-4-2">Single cell data II - 1.3 Million Brain Cells x 20k genes (E18 Mice)</h3>
@@ -339,6 +367,15 @@ Density of posterior means
 </p>
 </div>
 </div>
+<aside class="notes">
+<ul class="org-ul">
+<li>We set all non-zero expression levels to 1, which retains the essential information of whether or not a certain gene is expressed
+</li>
+<li>After preprocessing, we are left with 14 billion datapoints
+</li>
+</ul>
+
+</aside>
 </section>
 <section id="slide-sec-4-3">
 <h3 id="sec-4-3">Mutations and Cellular Pathways in Different Cancer Types</h3>
@@ -372,6 +409,8 @@ Density of posterior means
 </p>
 </div>
 </div>
+
+
 </section>
 </section>
 <section>
@@ -379,11 +418,11 @@ Density of posterior means
 <h2 id="sec-5">Conclusion</h2>
 <div class="column" style="float:left; width: 100%">
 <ul>
-<li data-fragment-index="1" class="fragment appear">The OrMachine: <b>intuitive</b> <b>probabilistic</b> probabilistic model for binary data</li>
+<li data-fragment-index="1" class="fragment appear">The OrMachine: <b>intuitive</b> probabilistic model for binary data.</li>
 <li data-fragment-index="2" class="fragment appear">Highly <b>scalable Bayesian inference</b>.</li>
 <li data-fragment-index="3" class="fragment appear">Outperforms state of the methods for Boolean matrix factorisation and completion.</li>
-<li data-fragment-index="4" class="fragment appear">Missing data and prior knowledge can easily be integrated.</li>
-<li data-fragment-index="5" class="fragment appear">Multi-layer architectures can extract remaining structure, build interpretable hierarchies and use  information.</li>
+<li data-fragment-index="4" class="fragment appear"><b>Missing data</b> and <b>prior knowledge</b> can easily be integrated.</li>
+<li data-fragment-index="5" class="fragment appear">Multi-layer architectures can infer interpretable hierarchies.</li>
 
 </ul>
 </div>
@@ -396,7 +435,29 @@ Density of posterior means
 <div class="outline-text-2" id="text-6">
 </div></section>
 <section id="slide-sec-6-1">
-<h3 id="sec-6-1">Auto-Regulating Sparsity</h3>
+<h3 id="sec-6-1">Deep noisy calculator digits</h3>
+<div class="column" style="float:left; width: 100%">
+
+<div class="figure">
+<p><img src="./deeper_calc.png" alt="deeper_calc.png" width="50%" height="50%" />
+</p>
+</div>
+<ul>
+<li>Input: 50 digits with 70% missing observations</li>
+<li>Reduce reconstruction error from 1.4% to 0.4% compared to shallow model</li>
+
+</ul>
+</div>
+<aside class="notes">
+<ul class="org-ul">
+<li>From a Bayesian perspective this is like a prior, indicating more factorisable structure.
+</li>
+</ul>
+
+</aside>
+</section>
+<section id="slide-sec-6-2">
+<h3 id="sec-6-2">Auto-Regulating Sparsity</h3>
 <div class="column" style="float:left; width: 100%">
 
 <div class="figure">
@@ -405,16 +466,16 @@ Density of posterior means
 </div>
 </div>
 </section>
-<section id="slide-sec-6-2">
-<h3 id="sec-6-2">Preprint on ArXiv</h3>
+<section id="slide-sec-6-3">
+<h3 id="sec-6-3">Preprint on ArXiv</h3>
 
 <div class="figure">
 <p><img src="./arxiv.png" alt="arxiv.png" width="90%" height="90%" />
 </p>
 </div>
 </section>
-<section id="slide-sec-6-3">
-<h3 id="sec-6-3">Hamming Machine</h3>
+<section id="slide-sec-6-4">
+<h3 id="sec-6-4">Hamming Machine</h3>
 <ul>
 <li data-fragment-index="1" class="fragment appear">Construct a probability distribution based on the hamming distance between two binary vectors, \({h(\mathbf{x},\mathbf{u})}\), and a dispersion parameter \({\lambda}\): $$ p(\mathbf{x}|\mathbf{u}) \propto \exp\left[ -\lambda \, h(\mathbf{x},\mathbf{u}) \right] $$</li>
 <li data-fragment-index="2" class="fragment appear">Each observations \({\mathbf{x} }\) is generated from a subset of binary <b>codes</b>: \({\mathbf{u}_{l{=}1\ldots L}}\), selected by a vector of binary latent variables \({\mathbf{z}}\) $$ p(\mathbf{x}|\mathbf{U},\mathbf{z},\lambda) \propto \prod\limits_l p(\mathbf{x}|\mathbf{u}_l,\lambda)^{z_l} = \prod\limits_d \exp\left[- \sum_l z_l \lambda h(x_d,u_{ld}) \right]$$</li>
@@ -432,11 +493,11 @@ Density of posterior means
 
 </aside>
 </section>
-<section id="slide-sec-6-4">
-<h3 id="sec-6-4">One-hot sampling</h3>
-</section>
 <section id="slide-sec-6-5">
-<h3 id="sec-6-5">Introduction to Latent Variable Models</h3>
+<h3 id="sec-6-5">One-hot sampling</h3>
+</section>
+<section id="slide-sec-6-6">
+<h3 id="sec-6-6">Introduction to Latent Variable Models</h3>
 <aside class="notes">
 <ul class="org-ul">
 <li>I am sure you are all familiar with the notion of latent variable models. However, I'd like to use this section to introduce the notation and to set the stage for what follows.
@@ -447,8 +508,8 @@ Density of posterior means
 
 </aside>
 </section>
-<section id="slide-sec-6-5-1">
-<h4 id="sec-6-5-1">Notation and Graphical Model</h4>
+<section id="slide-sec-6-6-1">
+<h4 id="sec-6-6-1">Notation and Graphical Model</h4>
 <aside class="notes">
 <ul class="org-ul">
 <li>graphical model (directed = Bayes nets) encodes independence properties
@@ -500,8 +561,8 @@ Density of posterior means
 </div>
 
 </section>
-<section id="slide-sec-6-5-2">
-<h4 id="sec-6-5-2">Neural network</h4>
+<section id="slide-sec-6-6-2">
+<h4 id="sec-6-6-2">Neural network</h4>
 
 <div class="figure">
 <p><img src="./single_layer_network.png" alt="single_layer_network.png" />
@@ -512,8 +573,8 @@ Density of posterior means
 
 </ul>
 </section>
-<section id="slide-sec-6-5-3">
-<h4 id="sec-6-5-3">What makes a good latent variable model for biological data?</h4>
+<section id="slide-sec-6-6-3">
+<h4 id="sec-6-6-3">What makes a good latent variable model for biological data?</h4>
 <aside class="notes">
 <ul class="org-ul">
 <li>Latent properties will often be discrete.
@@ -524,8 +585,8 @@ Density of posterior means
 
 </aside>
 </section>
-<section id="slide-sec-6-6">
-<h3 id="sec-6-6">Multi-layer OrMachine</h3>
+<section id="slide-sec-6-7">
+<h3 id="sec-6-7">Multi-layer OrMachine</h3>
 
 <div class="figure">
 <p><img src="./twolayer_hm.png" alt="twolayer_hm.png" />
@@ -543,36 +604,36 @@ $$
 The joint density factorises in terms of the form p(layer|parents)
 </p>
 </section>
-<section id="slide-sec-6-7">
-<h3 id="sec-6-7">Random matrix factorisation</h3>
-<div class="outline-text-3" id="text-6-7">
+<section id="slide-sec-6-8">
+<h3 id="sec-6-8">Random matrix factorisation</h3>
+<div class="outline-text-3" id="text-6-8">
 </div></section>
-<section id="slide-sec-6-7-1">
-<h4 id="sec-6-7-1">Problem setting</h4>
+<section id="slide-sec-6-8-1">
+<h4 id="sec-6-8-1">Problem setting</h4>
 
 <div class="figure">
 <p><img src="./factorisation.png" alt="factorisation.png" width="50%" height="50%" />
 </p>
 </div>
 </section>
-<section id="slide-sec-6-8">
-<h3 id="sec-6-8">Speed</h3>
+<section id="slide-sec-6-9">
+<h3 id="sec-6-9">Speed</h3>
 
 <div class="figure">
 <p><img src="./scaling_parallel.png" alt="scaling_parallel.png" />
 </p>
 </div>
 </section>
-<section id="slide-sec-6-9">
-<h3 id="sec-6-9">Single cell data I</h3>
+<section id="slide-sec-6-10">
+<h3 id="sec-6-10">Single cell data I</h3>
 
 <div class="figure">
 <p><img src="./sc_hierarchy.png" alt="sc_hierarchy.png" />
 </p>
 </div>
 </section>
-<section id="slide-sec-6-10">
-<h3 id="sec-6-10">MNIST</h3>
+<section id="slide-sec-6-11">
+<h3 id="sec-6-11">MNIST</h3>
 
 <div class="figure">
 <p><img src="./mnist_hierarchy.png" alt="mnist_hierarchy.png" width="60%" height="50%" />
@@ -586,8 +647,8 @@ The joint density factorises in terms of the form p(layer|parents)
 
 </aside>
 </section>
-<section id="slide-sec-6-11">
-<h3 id="sec-6-11">Deep calculator digits</h3>
+<section id="slide-sec-6-12">
+<h3 id="sec-6-12">Deep calculator digits</h3>
 
 <div class="figure">
 <p><img src="./calc_digit_intro.png" alt="calc_digit_intro.png" />
@@ -604,8 +665,8 @@ The joint density factorises in terms of the form p(layer|parents)
 </ul>
 
 </section>
-<section id="slide-sec-6-12">
-<h3 id="sec-6-12">A little detour: Peskun's Theorem</h3>
+<section id="slide-sec-6-13">
+<h3 id="sec-6-13">A little detour: Peskun's Theorem</h3>
 <ul>
 <li data-fragment-index="1" class="fragment appear">We have
 <ul>
@@ -620,8 +681,8 @@ $$ v(f, \pi, P_1) \ge v(f, \pi, P_2) $$ where $$ v(f, \pi, P) = \lim_{N\rightarr
 </ul>
 
 </section>
-<section id="slide-sec-6-13">
-<h3 id="sec-6-13">Implementation</h3>
+<section id="slide-sec-6-14">
+<h3 id="sec-6-14">Implementation</h3>
 <div class="column" style="float:left; width: 100%">
 
 <div class="figure">
@@ -630,8 +691,8 @@ $$ v(f, \pi, P_1) \ge v(f, \pi, P_2) $$ where $$ v(f, \pi, P) = \lim_{N\rightarr
 </div>
 </div>
 </section>
-<section id="slide-sec-6-14">
-<h3 id="sec-6-14">MovieLense</h3>
+<section id="slide-sec-6-15">
+<h3 id="sec-6-15">MovieLense</h3>
 <div class="column" style="float:left; width: 50%">
 <p>
 <img src="./movielense1.png" alt="movielense1.png" width="85%" height="50%" />
@@ -646,8 +707,8 @@ Percentages of correctly predicted, unobserved movie ratings.
 </div>
 </div>
 </section>
-<section id="slide-sec-6-15">
-<h3 id="sec-6-15">Random matrix factorisation</h3>
+<section id="slide-sec-6-16">
+<h3 id="sec-6-16">Random matrix factorisation</h3>
 <div class="column" style="float:left; width: 50%">
 <p>
 $$ $$
@@ -671,8 +732,8 @@ $$ $$
 </div>
 </div>
 </section>
-<section id="slide-sec-6-16">
-<h3 id="sec-6-16">Random matrix completion</h3>
+<section id="slide-sec-6-17">
+<h3 id="sec-6-17">Random matrix completion</h3>
 <div class="column" style="float:left; width: 100%">
 <ul>
 <li data-fragment-index="1" class="fragment appear">Missing dat? Set unobserved data-point to \(x_{nd} = 0.5 \;\rightarrow\; \tilde{x}_{nd}=0\)</li>
@@ -702,8 +763,8 @@ $$ p(z_{nl}|\text{rest}) = \sigma\left[\lambda \tilde{z}_{nl} \sum\limits_d \til
 </div>
 </div>
 </section>
-<section id="slide-sec-6-17">
-<h3 id="sec-6-17">Dispersion paramter \(\lambda\)</h3>
+<section id="slide-sec-6-18">
+<h3 id="sec-6-18">Dispersion paramter \(\lambda\)</h3>
 <div class="column" style="float:left; width: 100%">
 <p>
 $$ $$
@@ -720,8 +781,8 @@ $$ \sigma(\lambda)_{\text{mle}} =\frac{P}{ND}\;. $$
 </p>
 </div>
 </section>
-<section id="slide-sec-6-18">
-<h3 id="sec-6-18">Metropolised Gibbs sampler - Algorithm</h3>
+<section id="slide-sec-6-19">
+<h3 id="sec-6-19">Metropolised Gibbs sampler - Algorithm</h3>
 <div class="column" style="float:left; width: 100%">
 
 <div class="figure">
@@ -730,8 +791,8 @@ $$ \sigma(\lambda)_{\text{mle}} =\frac{P}{ND}\;. $$
 </div>
 </div>
 </section>
-<section id="slide-sec-6-19">
-<h3 id="sec-6-19">"Data"</h3>
+<section id="slide-sec-6-20">
+<h3 id="sec-6-20">"Data"</h3>
 <div class="column" style="float:left; width: 100%">
 
 <div class="figure">
@@ -740,8 +801,8 @@ $$ \sigma(\lambda)_{\text{mle}} =\frac{P}{ND}\;. $$
 </div>
 </div>
 </section>
-<section id="slide-sec-6-20">
-<h3 id="sec-6-20">Clustering via one-hot activations</h3>
+<section id="slide-sec-6-21">
+<h3 id="sec-6-21">Clustering via one-hot activations</h3>
 <div class="column" style="float:left; width: 100%">
 
 <div class="figure">
@@ -751,8 +812,8 @@ $$ \sigma(\lambda)_{\text{mle}} =\frac{P}{ND}\;. $$
 </div>
 
 </section>
-<section id="slide-sec-6-21">
-<h3 id="sec-6-21">A modified binary state Gibbs sampler</h3>
+<section id="slide-sec-6-22">
+<h3 id="sec-6-22">A modified binary state Gibbs sampler</h3>
 <div class="column" style="float:left; width: 100%">
 <ul>
 <li>Gibbs sampler: Draw a new value \(z'\) from the full conditional \(p(z'|\text{rest})\).</li>
@@ -791,8 +852,8 @@ $$ \sigma(\lambda)_{\text{mle}} =\frac{P}{ND}\;. $$
 </aside>
 
 </section>
-<section id="slide-sec-6-22">
-<h3 id="sec-6-22">Inference: Monte-Carlo EM Algorithm</h3>
+<section id="slide-sec-6-23">
+<h3 id="sec-6-23">Inference: Monte-Carlo EM Algorithm</h3>
 <div class="column" style="float:left; width: 100%">
 <div class="column" style="float:centre; align=centre">
 <ul>
@@ -819,26 +880,90 @@ $$ $$
 </ul>
 </div>
 </div>
-</section>
-<section id="slide-sec-6-23">
-<h3 id="sec-6-23">Deep noisy calculator digits</h3>
-<div class="column" style="float:left; width: 100%">
 
-<div class="figure">
-<p><img src="./deeper_calc.png" alt="deeper_calc.png" width="50%" height="50%" />
+</section>
+<section id="slide-sec-6-24">
+<h3 id="sec-6-24">Full conditionals</h3>
+<div class="column" style="float:left; width: 60%">
+<p>
+$$ p(z_{nl}|\text{rest}) = \sigma\bigg[\lambda \tilde{z}_{nl} \sum\limits_d \tilde{x}_{nd}\; \color{darkgreen}{u_{ld}} \color{brown}{\prod\limits_{l'\neq l} (1-z_{nl'}u_{l'd})}\bigg] $$
 </p>
-</div>
-<ul>
-<li>Input: 50 digits with 70% missing observations</li>
-<li>Reduce reconstruction error from 1.4% to 0.4% compared to shallow model</li>
+<ul data-fragment-index="3" class="fragment appear">
+<li>Intuition: Need to consider the full Markov Blanket.</li>
 
 </ul>
+<p>
+$$ $$
+</p>
+<ul>
+<li data-fragment-index="4" class="fragment appear"><b>Computational shortcut:</b>
+<ul>
+<li data-fragment-index="5" class="fragment appear">\(\color{darkgreen}{u_{ld} = 0}\) &rarr; No effect of \(z_{nl}\) on the likelihood.</li>
+<li data-fragment-index="6" class="fragment appear">\(\color{brown}{z_{nl'}u_{l'd} = 1}\) for \(\color{brown}{l' \neq l}\) \(\rightarrow\) \(x_{nd}\) is <b>explained away</b>.</li>
+
+</ul></li>
+
+</ul>
+</div>
+<div class="column" style="float:left; width: 40%">
+
+<div class="figure">
+<p><img src="./single_layer_network.png" alt="single_layer_network.png" data-fragment-index="3" class="fragment appear" />
+</p>
+</div>
 </div>
 <aside class="notes">
 <ul class="org-ul">
-<li>From a Bayesian perspective this is like a prior, indicating more factorisable structure.
+<li>Prior knowledege by setting x=0.5
 </li>
 </ul>
+
+</aside>
+</section>
+<section id="slide-sec-6-25">
+<h3 id="sec-6-25">The Data Revolution in Biology</h3>
+<div class="column" style="float:left; width: 100%">
+<p>
+Rapid increase in the availability of <b>large molecular datasets</b>!
+</p>
+<span class="fragment (appear)" data-fragment-index="1"><p>
+<p>
+$$\color{red}{\Large\mathbf{\downarrow}}$$
+</p>
+<span class="fragment (appear)" data-fragment-index="1"><p>
+<p>
+Better understanding of disease and <b>better healthcare</b>?
+$$ $$
+</p>
+<span class="fragment (appear)" data-fragment-index="2"><p>
+<p>
+Need computational and statistical tools that
+</p>
+<span class="fragment (appear)" data-fragment-index="2"><p>
+<ol>
+<li><b>Scale</b> to the huge datastes</li>
+<li>Relate to the <b>physical and biological mechanisms</b> that generate the data</li>
+<li>Can leverage on prior <b>expert domain knowledge</b></li>
+<li>Are easy to <b>interprete</b></li>
+
+</ol>
+</div>
+<aside class="notes">
+<p>
+A data revolution has been going on for a while in Biology. Based on a rapidly declining cost of Genome sequencing techniques; on new experimantel techniques such as single cell sequencing; and on recent population scale studies we have tremendous amounts of molecular data for biomedical research.
+Such data promises the precise understanding of the molecular basis of diseases, development targeted therapies and ultimately better healthcare
+</p>
+
+<p>
+But to live up to this promise, we need tools that enable reseaercher to draw meaningful conclusioncs from such datasets. In particular we need statistical and computational models, that fullfill the following criteria. They need to scale to the enormous amounts of data, that can relate to the underlying physical mechanisms, they are able to leverage on the prior expert domain knowledge, and that are easily interpretable.
+</p>
+
+<p>
+In order for latent variables to be interpretable in this setting, they will often need to be categorical or binary. For instance indicating the presence or absence of disease, or disruption of a cellular pathway process.
+Latent variable models play an 
+That's why I would like to introduce you to the OrMachine. 
+The OrMachine is fully binary latent variable model, that is based on Boolen Matrix factorisatoin.
+</p>
 
 </aside>
 </section>
