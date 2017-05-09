@@ -31,6 +31,18 @@
 #+OPTIONS: org-reveal-center:t
 # #+REVEAL_EXTRA_CSS: ./local.css
 
+
+* Single Cell Gene Expression
+#+ATTR_HTML: :width 80% :height 80%
+[[./mouse_data.png]]
+#+BEGIN_NOTES
+Requirements
+- interpretable: intuition for latent variables, quantification of uncertainty
+- correspondencen to physical mechanism: discrete latent properties like presence/absence of disease/mutation
+- prior knowledge
+- scalability
+#+END_NOTES
+
 * Boolean Matrix Factorisation
 #+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
 $$ $$
@@ -56,34 +68,22 @@ Example
 #+ATTR_HTML: :width 45% :height 45%
 [[./calc_example.png]]
 #+REVEAL_HTML: </div>
+
+#+BEGIN_NOTES
+- What is BooMF? The approximation of a binary data matrix as product of two low rank binary matrices.
+- Like a regular matrix product but thresholded.
+- Essentially the model learns the seperate bars from which every digit can be composed. We call them /codes/
+- The L-dimensional indicator Z provides the compact representation of which codes are allocated to each observation.
+- Similarity to noisy-OR
+#+END_NOTES
+
 ** Probabilistic Generative Model
-#+REVEAL_HTML: <div class="column" style="float:left; width: 45%">
-#+ATTR_HTML: :width 90% :height 90%
-[[./calc_digit_intro.png]]
-#+REVEAL_HTML: </div>
-
-#+REVEAL_HTML: <div class="column" style="float:right; width: 55%">
-#+ATTR_REVEAL: :frag (appear appear) :frag_idx(1)
-Notation
-#+ATTR_REVEAL: :frag appear
-- ${x_{nd}}$ -- observations
-- ${u_{ld}}$ -- codes (globale variables)
-- ${z_{nl}}$ -- latent variables (local variables)
-- $\lambda \ge 0$ -- global noise parameter
-
-#+ATTR_REVEAL: :frag (appear) :frag_idx(2)
-Definitions
-#+ATTR_REVEAL: :frag appear
-- Mapping $\{0,1\}$ to $\{-1,1\}$: $\tilde{x} = 2x-1$
-- Logistic sigmoid: $\sigma(x) = (1+\exp[-x])^{-1}$
-#+REVEAL_HTML: </div>
-
 #+REVEAL_HTML: <div class="column" style="float:right; width: 100%">
 #+ATTR_REVEAL: :frag appear
-$$  p(x_{nd}|\mathbf{u}_d,\mathbf{z}_n,\lambda)= \begin{cases} \sigma [ \lambda];\;&\text{if}\;x_{nd}=\min(1,\mathbf{z}_n^T\mathbf{u}_d)\;\; \\ 1-\sigma [ \lambda]=\sigma[-\lambda];\;&\text{if}\;x_{nd}\neq\min(1,\mathbf{z}_n^T\mathbf{u}_d)    \end{cases}
+$$  p(\underbrace{x_{nd}}_{\substack{\text{obser-} \\ \text{vation}}}|\overbrace{\mathbf{u}_d}^{\text{codes}},\underbrace{\mathbf{z}_n}_{\substack{\text{latent}\\ \text{rprsnt.}}},\overbrace{\lambda}^{\substack{\text{disper-}\\ \text{sion}}})= \begin{cases} \big(1+\exp[-\lambda]\big)^{-1};\;&\text{if}\;\color{darkgreen}{x_{nd}=\min(1,\mathbf{z}_n^T\mathbf{u}_d)}\;\; \\ \big(1+\exp[\lambda]\big)^{-1};\;&\text{else} \end{cases}
 $$
 #+ATTR_REVEAL: :frag appear
-$$\;\;\;\; = \sigma\left[\lambda \tilde{x}_{nd} \left(1-2\prod\limits_{l}(1-z_{nl}u_{ld})\right) \right]$$
+$$\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;\; = \sigma_{\substack{\text{logistic} \\ \text{sigmoid}}}\left[\lambda \underbrace{\tilde{x}_{nd}}_{\tilde{x} = 2x-1} \left(1-2\color{brown}{\prod\limits_{l}(1-z_{nl}u_{ld})}\right) \right]$$
 #+REVEAL_HTML: </div>
 #+BEGIN_NOTES
 - This is a probabilistic model for *Boolean matrix factorisation*.
@@ -91,149 +91,290 @@ $$\;\;\;\; = \sigma\left[\lambda \tilde{x}_{nd} \left(1-2\prod\limits_{l}(1-z_{n
 - Example topic models
 #+END_NOTES
 * Inference for the OrMachine
-** Full conditionals
+*Gibbs Sampling*
+#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
 #+REVEAL_HTML: <div class="column" style="float:left; width: 60%">
-#+ATTR_REVEAL: :frag (appear appear) :frag_idx (1 2)
-- Likelihood: $$L = \prod\limits_{nd} \sigma\bigg[\lambda \tilde{x}_{nd} (1-2\prod\limits_{l}(1-z_{nl}u_{ld}) \bigg]$$
-- Full Conditional: $$ p(z_{nl}|\text{rest}) = \sigma\bigg[\lambda \tilde{z}_{nl} \sum\limits_d \tilde{x}_{nd}\; \color{darkgreen}{u_{ld}} \color{brown}{\prod\limits_{l'\neq l} (1-z_{nl'}u_{l'd})}\bigg] $$
-  #+ATTR_REVEAL: :frag appear :frag_idx 3
-  - Intuition: Need to consider the full Markov Blanket.
-$$ $$
-#+ATTR_REVEAL: :frag (appear) :frag_idx (4)
-- *Computational shortcut:*
-  #+ATTR_REVEAL: :frag (appear appear) :frag_idx (5 6)
-  - $\color{darkgreen}{u_{ld} = 0}$ \rightarrow No effect of $z_{nl}$ on the likelihood.
-  - $\color{brown}{z_{nl'}u_{l'd} = 1}$ for $\color{brown}{l' \neq l}$ $\rightarrow$ $x_{nd}$ is *explained away*.
-#+REVEAL_HTML: </div>
-#+REVEAL_HTML: <div class="column" style="float:left; width: 40%">
-#+ATTR_REVEAL: :frag appear :frag_idx 3
-[[./single_layer_network.png]]
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="1"><p>
+Full conditional
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="1"><p>
+$$ p(z_{nl}|\text{rest}) = \sigma\bigg[\lambda \tilde{z}_{nl} \sum\limits_d \tilde{x}_{nd}\; \color{darkgreen}{u_{ld}} \color{brown}{\prod\limits_{l'\neq l} (1-z_{nl'}u_{l'd})}\bigg] $$
 #+REVEAL_HTML: </div>
 
-# ** Implementation
-# #+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
-# #+ATTR_HTML: :width 50% :height 60%
-# [[./alg1_2.png]]
-# #+REVEAL_HTML: </div>
-** A modified binary state Gibbs sampler
-#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
-#+ATTR_REVEAL: :frag (appear appear appear appear) :frag_idx (1 2 3 4)
-- Old state: $\mathbf{x}$, new state: $\mathbf{y}$.
-- Gibbs sampler: Draw a new value from the full conditional $p(y|\text{rest})$.
-- Here, we propose value $y$ *different from the* $x$ with probability 1.
-- Metropolis-Hasting: $$ p(\text{accept}) = p(\text{mutate})= \frac{p(y|\text{rest}) q(x|y)}{p(x|\text{rest}) q(y|x)} = \frac{p(y|\text{rest})}{1-p(y|\text{rest})} \ge p(y|\text{rest})$$
-
-#+ATTR_REVEAL: :frag appear
-- Typical Gibbs sampler:
-
-  [[./heads_small.png]]   [[./heads_small.png]]  [[./heads_small.png]]  [[./tails_small.png]]  [[./heads_small.png]] 
- [[./tails_small.png]]  [[./tails_small.png]]  [[./heads_small.png]]  [[./tails_small.png]]  [[./heads_small.png]]  [[./heads_small.png]] [[./tails_small.png]] 
-
-#+ATTR_REVEAL: :frag appear
-- Metropolised Gibbs sampler:
-
-  [[./heads_small.png]]  [[./tails_small.png]]   [[./heads_small.png]]  [[./tails_small.png]]  [[./heads_small.png]]  [[./tails_small.png]]  [[./heads_small.png]]  [[./tails_small.png]]  [[./heads_small.png]]  [[./tails_small.png]]  [[./heads_small.png]]  [[./tails_small.png]]
-#+REVEAL_HTML: </div>
-
-** Dispersion paramter $\lambda$
-#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
-- How many entries are correctly predicted by the deterministic Boolean product $$ P = \sum\limits_{n,d} I\left[x_{nd}=(1-2\prod\limits_{l}(1-z_{nl}u_{ld})\right] $$
-- We can rewrite the likelihood
- $$ L = \sigma(\lambda)^P \sigma(-\lambda)^{(ND-P)} $$
-- We find the MLE of $\sigma(\lambda)$ in *closed form*:
-$$ \sigma(\lambda)_{\text{mle}} =\frac{P}{ND}\;. $$
-#+REVEAL_HTML: </div>
-** Metropolised Gibbs sampler - Algorithm
-#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
-#+ATTR_HTML: :width 50% :height 60%
-[[./alg2_mod.png]]
-#+REVEAL_HTML: </div>
-* Examples and Experiments
-** Random matrix factorisation
-#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
-$$ $$
-[[./mp.png]]
-- MAP inference using message passing.
-- Outperforms all previous state-of-the-art methods.
-#+ATTR_REVEAL: :frag appear :frag_idx 1
-- *OrMachine features consistently lower reconstruction error*
-#+REVEAL_HTML: </div>
-#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
-#+ATTR_REVEAL: :frag appear :frag_idx 1
-#+ATTR_HTML: :width 70% :height %0%
-[[./factorsiation_performance_new.png]]
-#+REVEAL_HTML: </div>
-** Random matrix completion
-#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
-#+ATTR_REVEAL: :frag (appear) :frag_idx (1)
-- Missing dat? Set unobserved data-point to $x_{nd} = 0.5 \;\rightarrow\; \tilde{x}_{nd}=0$ 
+#+REVEAL_HTML: <div class="column" style="float:left; width: 35%">
+# - Need to consider the full Markov Blanket, i.e. *all* variables.
 #+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="2"><p>
-$$L = \prod\limits_{nd} \sigma\left[\lambda \tilde{x}_{nd} (1-2\prod\limits_{l}(1-z_{nl}u_{ld}) \right]\;\;\rightarrow\;\text{Contribute constant factor}\;\sigma(0)=\frac{1}{2}$$ 
+Computational shortcuts
+- $\color{darkgreen}{u_{ld} = 0}$ @@html:<br>@@ \rightarrow $z_{nl}$ and $x_{nd}$ /disconnected/.
+- $\color{brown}{z_{nl'}u_{l'd} = 1}$ for $\color{brown}{l' \neq l}$ @@html:<br>@@ \rightarrow $x_{nd}$ is /explained away/.
+#+REVEAL_HTML: </div>
+
 #+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="3"><p>
-$$ p(z_{nl}|\text{rest}) = \sigma\left[\lambda \tilde{z}_{nl} \sum\limits_d \tilde{x}_{nd}\; u_{ld}\prod\limits_{l'\neq l} (1-z_{nl'}u_{l'd})\right]\;\;\rightarrow\; \text{No contribution} $$
+*Dispersion Parameter to maximise Likelihood*
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="3"><p>
+$$ \lambda_{\text{MLE}} = \text{logit}\left[ \text{reconstruction accuracy} \right] $$
+# $$ \sigma(\lambda)_{\text{MLE}} = \frac{\text{No. of correctly reconstructed data points}}{\text{No. of data points}} $$
+#+REVEAL_HTML: </div>
+
+#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="4"><p>
+*Modified Sampler -- Always propose to change*
+#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="4"><p>
+Standard Gibbs sampler @@html:<br>@@ 
+  [[./heads_smaller.png]]   [[./heads_smaller.png]]  [[./heads_smaller.png]]  [[./tails_smaller.png]]  [[./heads_smaller.png]] 
+ [[./tails_smaller.png]]  [[./tails_smaller.png]]  [[./heads_smaller.png]]  [[./tails_smaller.png]] 
 #+REVEAL_HTML: </div>
 #+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
-#+ATTR_REVEAL: :frag appear :frag_idx 4
-#+ATTR_HTML: :width 80% :height 50%
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="4"><p>
+Metropolised Gibbs sampler @@html:<br>@@ 
+  [[./heads_smaller.png]]  [[./tails_smaller.png]]   [[./heads_smaller.png]]  [[./tails_smaller.png]]  [[./heads_smaller.png]]  [[./tails_smaller.png]]  [[./heads_smaller.png]]  [[./tails_smaller.png]]  [[./heads_smaller.png]]
+#+REVEAL_HTML: </div>
+
+
+#+BEGIN_NOTES
+- Use graphical model language -> prior knowledge is clamping variables
+- Conditional takes a surprisingly simple form
+- You might think this is slow
+- Think if this as a neural net without nonlinearity
+- Normally need to consider *full Markov blanket*
+- Parallelisable
+- Set lambda to MLE after every sweep through u/z in *Monte Carlo EM fashion*
+- Parallelisable
+#+END_NOTES
+
+* Examples and Experiments
+** Synthetic Data Benchmarks
+#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="1"><p>
+*Random Matrix Factorisation*
+#+ATTR_REVEAL: :frag appear :frag_idx 1
+#+ATTR_HTML: :width 75% :height %0%
+[[./factorsiation_performance_new2.png]]
+
+[Message Passing arXiv: 1509.08535]
+#+REVEAL_HTML: </div>
+
+#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="1"><p>
+Problem Setting
+#+ATTR_REVEAL: :frag appear :frag_idx 1
+#+ATTR_HTML: :width 95% :height 95%
+[[./factor_example2.png]]
+
+
+
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="2"><p>
+*Random Matrix Completion*
+#+ATTR_REVEAL: :frag appear :frag_idx 2
+#+ATTR_HTML: :width 60% :height 60%
 [[./completion1.png]]
 #+REVEAL_HTML: </div>
-#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
-#+ATTR_REVEAL: :frag appear :frag_idx 5
-#+ATTR_HTML: :width 85% :height 50%
-[[./completion2.png]]
-#+REVEAL_HTML: </div>
 
-# ** MovieLense
-# #+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
-# #+ATTR_HTML: :width 85% :height 50%
-# [[./movielense1.png]]
-# Percentages of correctly predicted, unobserved movie ratings.
+
+
+
+# #+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="3"><p>
+# Density of posterior means
+# #+ATTR_REVEAL: :frag appear :frag_idx 3
+# #+ATTR_HTML: :width 65% :height 50%
+# [[./completion2.png]]
 # #+REVEAL_HTML: </div>
-# #+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
-# #+ATTR_HTML: :width 85% :height 50%
-# [[./ml_roc.png]]
-# #+REVEAL_HTML: </div>
+#+BEGIN_NOTES
+- Compare to state of the art
+- Movie lense results are in the paper
+#+END_NOTES
 ** Single cell data II - 1.3 Million Brain Cells x 20k genes (E18 Mice)
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="1"><p>
+#+ATTR_HTML: :width 110% :height 110%
+[[./mouse_gene_single.png]]
+Codes: Gene sets
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="1"><p>
+#+ATTR_HTML: :width 110% :height 110%
+[[./mouse_specimen_single.png]]
+Latent representations of each cell
+$$ $$
+#+ATTR_REVEAL: :frag (appear) :frag_idx (2)
+*How to chose the latent dimension?*
+
+#+BEGIN_NOTES 
+- Convergence in a few hours on a Desktop with 8 cores. *Parallelsiable*!
+#+END_NOTES
+
 *** Calculator Digit Hierarchy
 #+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
-[[./calc_hierarchy_feb21.png]]
+[[./calc_hierarchy_may5.png]]
 - OrMachines of different dimensionality on noise-free calculator digits
 #+REVEAL_HTML: </div>
 *** Gene patterns -- Cell representations
 #+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
-#+ATTR_HTML: :width 80% :height 50%
+#+ATTR_HTML: :width 73% :height 50%
 [[./mice_neurons1.png]]
 #+ATTR_REVEAL: :frag appear :frag_idx 1
-#+ATTR_HTML: :width 80% :height 50%
+#+ATTR_HTML: :width 73% :height 50%
 [[./mice_neurons2.png]]
 #+REVEAL_HTML: </div>
-** Deep noisy calculator digits
-#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
-#+ATTR_HTML: :width 50% :height 50%
-[[./deeper_calc.png]]
-- Input: 50 digits with 70% missing observations
-- Reduce reconstruction error from 1.4% to 0.4% compared to shallow model
+
+** Mutations and Cellular Pathways in Different Cancer Types
+
+** Compose Layers of OrMachines
+#+REVEAL_HTML: <div class="column" style="float:left; width: 19%">
+#+ATTR_HTML: :width 100% :height 100%
+[[./compose_mutations.png]] 
 #+REVEAL_HTML: </div>
-** Pancan and pathway data
-*** Setup: Combine Layers of OrMachines
-#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
-[[./arc.png]]
+#+REVEAL_HTML: <div class="column" style="float:left; width: 3%">
+$$ $$
+$$ $$
+$$ $$
+$\mathbf{\otimes}$
 #+REVEAL_HTML: </div>
-*** "Data"
-#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
-#+ATTR_HTML: :width 80% :height 80%
-[[./pancan_data.png]]
+#+REVEAL_HTML: <div class="column" style="float:left; width: 19%">
+#+ATTR_HTML: :width 100% :height 100%
+[[./compose_pws.png]]
+$$ $$
+$$ $$
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="3"><p>
+#+ATTR_HTML: :width 100% :height 100%
+[[./compose_disease.png]]
 #+REVEAL_HTML: </div>
+#+REVEAL_HTML: <div class="column" style="float:left; width: 5%">
+$$ $$
+$$ $$
+$$ $$
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="1"><p>
+$\mathbf{\;\rightarrow\;}$
+$$ $$
+$$ $$
+$$ $$
+$$ $$
+$$ $$
+$$ $$
+$$ $$
+$$ $$
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="3"><p>
+$\mathbf{\;\;\;\;\otimes}$
+#+REVEAL_HTML: </div>
+#+REVEAL_HTML: <div class="column" style="float:left; width: 25%">
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="1"><p>
+#+ATTR_HTML: :width 100% :height 100%
+[[./compose_pw_patients_empty.png]]
+$$ $$
+$$ $$
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="3"><p>
+#+ATTR_HTML: :width 75% :height 75%
+[[./compose_set_sets_empty.png]]
+#+REVEAL_HTML: </div>
+#+REVEAL_HTML: <div class="column" style="float:left; width: 5%">
+$$ $$
+$$ $$
+$$ $$
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="2"><p>
+$\mathbf{\;\leftarrow}$
+$$ $$
+$$ $$
+$$ $$
+$$ $$
+$$ $$
+$$ $$
+$$ $$
+$$ $$
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="3"><p>
+$\mathbf{\rightarrow\;\;}$
+#+REVEAL_HTML: </div>
+
+#+REVEAL_HTML: <div class="column" style="float:left; width: 23%">
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="2"><p>
+#+ATTR_HTML: :width 85% :height 85%
+[[./compose_pw_sets_empty.png]]
+@@html:<br>@@
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="2"><p>
+$\mathbf{\otimes}$
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="2"><p>
+#+ATTR_HTML: :width 85% :height 85%
+[[./compose_embedding_empty.png]] 
+#+REVEAL_HTML: </div>
+
+#+BEGIN_NOTES 
+- *So this illustrates how this approach infers biologically meaningful differences and communalities between and within patient groups, that can lead to testable hypothesis, rather than optimising for classificatoin or prediction performance as continuous representations would.* 
+
+- Discrete latent variables lead to testable hypothesis rather than classification or prediction performance 
+- From a Bayesian perspective this is like a prior, indicating more factorisable structure.
+- This expresses the prior belief that patients with the same disease share latent properties.
+#+END_NOTES
+
+*** Compose Layers of OrMachines
+:PROPERTIES:
+:REVEAL_DATA_TRANSITION: none
+:END:
+#+REVEAL_HTML: <div class="column" style="float:left; width: 19%">
+#+ATTR_HTML: :width 100% :height 100%
+[[./compose_mutations.png]]
+#+REVEAL_HTML: </div>
+#+REVEAL_HTML: <div class="column" style="float:left; width: 3%">
+$$ $$
+$$ $$
+$$ $$
+$\mathbf{\otimes}$
+#+REVEAL_HTML: </div>
+#+REVEAL_HTML: <div class="column" style="float:left; width: 19%">
+#+ATTR_HTML: :width 100% :height 100%
+[[./compose_pws.png]]
+$$ $$
+$$ $$
+#+ATTR_HTML: :width 100% :height 100%
+[[./compose_disease.png]]
+#+REVEAL_HTML: </div>
+#+REVEAL_HTML: <div class="column" style="float:left; width: 5%">
+$$ $$
+$$ $$
+$$ $$
+$\mathbf{\;\rightarrow\;}$
+$$ $$
+$$ $$
+$$ $$
+$$ $$
+$$ $$
+$$ $$
+$$ $$
+$$ $$
+$\mathbf{\;\;\;\;\otimes}$
+#+REVEAL_HTML: </div>
+#+REVEAL_HTML: <div class="column" style="float:left; width: 25%">
+#+ATTR_HTML: :width 100% :height 100%
+[[./compose_pw_patients.png]]
+$$ $$
+$$ $$
+#+ATTR_HTML: :width 75% :height 75%
+[[./compose_set_sets.png]]
+#+REVEAL_HTML: </div>
+#+REVEAL_HTML: <div class="column" style="float:left; width: 5%">
+$$ $$
+$$ $$
+$$ $$
+$\mathbf{\;\leftarrow}$
+$$ $$
+$$ $$
+$$ $$
+$$ $$
+$$ $$
+$$ $$
+$$ $$
+$$ $$
+$\mathbf{\rightarrow\;\;}$
+#+REVEAL_HTML: </div>
+
+#+REVEAL_HTML: <div class="column" style="float:left; width: 23%">
+#+ATTR_HTML: :width 85% :height 85%
+[[./compose_pw_sets.png]]
+@@html:<br>@@
+$\mathbf{\otimes}$
+#+ATTR_HTML: :width 85% :height 85%
+[[./compose_embedding.png]] 
+#+REVEAL_HTML: </div>
+
 *** Embedding
 #+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
 #+ATTR_HTML: :width 75% :height 75%
 [[./pancan_representations.png]]
-#+REVEAL_HTML: </div>
-*** Clustering via one-hot activations
-#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
-# [[./arc_codes_2.png]]
-#+ATTR_HTML: :width 60% :height 60%
-[[./pancan_clustering.png]]
 #+REVEAL_HTML: </div>
 * Conclusion
 # :PROPERTIES:
@@ -244,17 +385,29 @@ $$ p(z_{nl}|\text{rest}) = \sigma\left[\lambda \tilde{z}_{nl} \sum\limits_d \til
 # :END:
 #+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
 #+ATTR_REVEAL: :frag (appear appear appear appear appear) :frag_idx (1 2 3 4 5)
-- Boolean Matrix Factorisation is a *simple and intuitive* model for binary observations.
-- The OrMachine: a *probabilistic* model with highly *scalable Bayesian inference*.
-- Outperforms state of the methods for Boolean matrix factorisation and completion.
-- Missing data and prior knowledge can easily be dealt with.
-- Multiple-layers of factorisation can extract remaining structure, build interpretable hierarchies of abstraction and leverage on additional prior information
+- Outperforms available methods for Boolean Matrix Factorisation
+- Applicable and scalable to most state-of-the art genomics data.
+- Compose OrMachines to link different types of knowledge.
+# - *Missing data* and *prior knowledge* can easily be integrated.
   #  learns compositional feautres
 #+REVEAL_HTML: </div>
+
 * Additional Material
+** Deep noisy calculator digits
+#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
+#+ATTR_HTML: :width 50% :height 50%
+[[./deeper_calc.png]]
+- Input: 50 digits with 70% missing observations
+- Reduce reconstruction error from 1.4% to 0.4% compared to shallow model
+#+REVEAL_HTML: </div>
+#+BEGIN_NOTES
+- From a Bayesian perspective this is like a prior, indicating more factorisable structure.
+#+END_NOTES
 ** Auto-Regulating Sparsity
+#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
 #+ATTR_HTML: :width 70% :height 70%
 [[./single_cell_overfit.png]]
+#+REVEAL_HTML: </div>
 ** Preprint on ArXiv
 #+ATTR_HTML: :width 90% :height 90%
 [[./arxiv.png]]
@@ -353,3 +506,257 @@ The joint density factorises in terms of the form p(layer|parents)
   - Define $P_2 \ge P_1$, if it's true for every off-diagonal element.
 - The theorem states, if $$P_2 \ge P_1$$ then:
   $$ v(f, \pi, P_1) \ge v(f, \pi, P_2) $$ where $$ v(f, \pi, P) = \lim_{N\rightarrow\infty} N \text{var}(\hat{I}_N) $$ is the variance of some estimator $$ \hat{I}_N = \sum\limits_{t=1}^N \frac{f(X^{(t)})}{N}\;\; \text{of}\;\; I = E_{\pi}(f)$$
+
+** Implementation
+#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
+#+ATTR_HTML: :width 50% :height 60%
+[[./alg1_2.png]]
+#+REVEAL_HTML: </div>
+** MovieLense
+#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+#+ATTR_HTML: :width 85% :height 50%
+[[./movielense1.png]]
+Percentages of correctly predicted, unobserved movie ratings.
+#+REVEAL_HTML: </div>
+#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+#+ATTR_HTML: :width 85% :height 50%
+[[./ml_roc.png]]
+#+REVEAL_HTML: </div>
+** Random matrix factorisation
+#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+$$ $$
+[[./mp.png]]
+- MAP inference using message passing.
+- Outperforms all previous state-of-the-art methods.
+#+ATTR_REVEAL: :frag appear :frag_idx 1
+- *OrMachine features consistently lower reconstruction error*
+#+REVEAL_HTML: </div>
+#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+#+ATTR_REVEAL: :frag appear :frag_idx 1
+#+ATTR_HTML: :width 70% :height %0%
+[[./factorsiation_performance_new.png]]
+#+REVEAL_HTML: </div>
+** Random matrix completion
+#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
+#+ATTR_REVEAL: :frag (appear) :frag_idx (1)
+- Missing dat? Set unobserved data-point to $x_{nd} = 0.5 \;\rightarrow\; \tilde{x}_{nd}=0$ 
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="2"><p>
+$$L = \prod\limits_{nd} \sigma\left[\lambda \tilde{x}_{nd} (1-2\prod\limits_{l}(1-z_{nl}u_{ld}) \right]\;\;\rightarrow\;\text{Contribute constant factor}\;\sigma(0)=\frac{1}{2}$$ 
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="3"><p>
+$$ p(z_{nl}|\text{rest}) = \sigma\left[\lambda \tilde{z}_{nl} \sum\limits_d \tilde{x}_{nd}\; u_{ld}\prod\limits_{l'\neq l} (1-z_{nl'}u_{l'd})\right]\;\;\rightarrow\; \text{No contribution} $$
+#+REVEAL_HTML: </div>
+#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+#+ATTR_REVEAL: :frag appear :frag_idx 4
+#+ATTR_HTML: :width 80% :height 50%
+[[./completion1.png]]
+#+REVEAL_HTML: </div>
+#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+#+ATTR_REVEAL: :frag appear :frag_idx 5
+#+ATTR_HTML: :width 85% :height 50%
+[[./completion2.png]]
+#+REVEAL_HTML: </div>
+** Dispersion paramter $\lambda$
+#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
+$$ $$
+- How many entries are correctly predicted by the deterministic Boolean product? $$ P = \sum\limits_{n,d} I\left[x_{nd}=(1-2\prod\limits_{l}(1-z_{nl}u_{ld}))\right] $$
+- We can rewrite the likelihood
+ $$ L = \sigma(\lambda)^P \sigma(-\lambda)^{(ND-P)} $$
+- We find the MLE of $\sigma(\lambda)$ in *closed form*:
+$$ \sigma(\lambda)_{\text{mle}} =\frac{P}{ND}\;. $$
+#+REVEAL_HTML: </div>
+** Metropolised Gibbs sampler - Algorithm
+#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
+#+ATTR_HTML: :width 50% :height 60%
+[[./alg2_mod.png]]
+#+REVEAL_HTML: </div>
+** "Data"
+#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
+#+ATTR_HTML: :width 80% :height 80%
+[[./pancan_data.png]]
+#+REVEAL_HTML: </div>
+** Clustering via one-hot activations
+#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
+# [[./arc_codes_2.png]]
+#+ATTR_HTML: :width 60% :height 60%
+[[./pancan_clustering.png]]
+#+REVEAL_HTML: </div>
+
+** A modified binary state Gibbs sampler
+#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
+#+ATTR_REVEAL: :frag appear 
+# - Old state: $\mathbf{x}$, new state: $\mathbf{y}$.
+- Gibbs sampler: Draw a new value $z'$ from the full conditional $p(z'|\text{rest})$.
+- Here, we propose value $z'$ *different from the* previous value $z$ with probability 1.
+- Metropolis-Hasting: $$ p(\text{accept}) = p(\text{mutate})= \frac{p(z'|\text{rest}) q(z|z')}{p(z|\text{rest}) q(z'|z)} = \frac{p(z'|\text{rest})}{1-p(z'|\text{rest})} \ge p(z'|\text{rest})$$
+
+#+ATTR_REVEAL: :frag appear
+- Typical Gibbs sampler:
+
+  [[./heads_small.png]]   [[./heads_small.png]]  [[./heads_small.png]]  [[./tails_small.png]]  [[./heads_small.png]] 
+ [[./tails_small.png]]  [[./tails_small.png]]  [[./heads_small.png]]  [[./tails_small.png]]  [[./heads_small.png]]  [[./heads_small.png]] [[./tails_small.png]] 
+
+#+ATTR_REVEAL: :frag appear
+- Metropolised Gibbs sampler:
+
+  [[./heads_small.png]]  [[./tails_small.png]]   [[./heads_small.png]]  [[./tails_small.png]]  [[./heads_small.png]]  [[./tails_small.png]]  [[./heads_small.png]]  [[./tails_small.png]]  [[./heads_small.png]]  [[./tails_small.png]]  [[./heads_small.png]]  [[./tails_small.png]]
+#+REVEAL_HTML: </div>
+#+BEGIN_NOTES
+- Lambda is available in closed form
+- Monte Carlo EM fashion
+#+END_NOTES
+
+** Inference: Monte-Carlo EM Algorithm
+#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
+#+REVEAL_HTML: <div class="column" style="float:centre; align=centre">
+- ~Until stopping criterion is reached~
+  $$ $$
+  + ~For each factor matrix entry~ $u_{ld}, z_{nl}$ ~[in parallel]~
+    - ~Compute full conditional (using shortcuts)~
+    - ~Update entry following Metropolised Gibbs sampler~
+  $$ $$
+  + ~Set~ $\sigma(\lambda)$ ~to its MLE~ 
+   $\big[\sigma(\lambda)_{\text{mle}}=$ ~MAP reconstruction accuracy~ $\big]$
+#+REVEAL_HTML: </div>
+#+REVEAL_HTML: </div>
+
+** Full conditionals
+#+REVEAL_HTML: <div class="column" style="float:left; width: 60%">
+#+ATTR_REVEAL: :frag (appear appear) :frag_idx (1 2)
+# - Likelihood: $$L = \prod\limits_{nd} \sigma\bigg[\lambda \tilde{x}_{nd} (1-2\prod\limits_{l}(1-z_{nl}u_{ld}) \bigg]$$
+$$ p(z_{nl}|\text{rest}) = \sigma\bigg[\lambda \tilde{z}_{nl} \sum\limits_d \tilde{x}_{nd}\; \color{darkgreen}{u_{ld}} \color{brown}{\prod\limits_{l'\neq l} (1-z_{nl'}u_{l'd})}\bigg] $$
+  #+ATTR_REVEAL: :frag appear :frag_idx 3
+  - Intuition: Need to consider the full Markov Blanket.
+$$ $$
+#+ATTR_REVEAL: :frag (appear) :frag_idx (4)
+- *Computational shortcut:*
+  #+ATTR_REVEAL: :frag (appear appear) :frag_idx (5 6)
+  - $\color{darkgreen}{u_{ld} = 0}$ \rightarrow No effect of $z_{nl}$ on the likelihood.
+  - $\color{brown}{z_{nl'}u_{l'd} = 1}$ for $\color{brown}{l' \neq l}$ $\rightarrow$ $x_{nd}$ is *explained away*.
+#+REVEAL_HTML: </div>
+#+REVEAL_HTML: <div class="column" style="float:left; width: 40%">
+#+ATTR_REVEAL: :frag appear :frag_idx 3
+[[./single_layer_network.png]]
+#+REVEAL_HTML: </div>
+#+BEGIN_NOTES
+- Prior knowledege by setting x=0.5
+#+END_NOTES
+** The Data Revolution in Biology
+#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
+Rapid increase in the availability of *large molecular datasets*!
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="1"><p>
+$$\color{red}{\Large\mathbf{\downarrow}}$$
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="1"><p>
+Better understanding of disease and *better healthcare*?
+$$ $$
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="2"><p>
+Need computational and statistical tools that
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="2"><p>
+1) *Scale* to the huge datastes
+2) Relate to the *physical and biological mechanisms* that generate the data
+3) Can leverage on prior *expert domain knowledge*
+4) Are easy to *interprete*
+#+REVEAL_HTML: </div>
+#+BEGIN_NOTES
+
+A data revolution has been going on for a while in Biology. Based on a rapidly declining cost of Genome sequencing techniques; on new experimantel techniques such as single cell sequencing; and on recent population scale studies we have tremendous amounts of molecular data for biomedical research.
+Such data promises the precise understanding of the molecular basis of diseases, development targeted therapies and ultimately better healthcare
+
+But to live up to this promise, we need tools that enable reseaercher to draw meaningful conclusioncs from such datasets. In particular we need statistical and computational models, that fullfill the following criteria. They need to scale to the enormous amounts of data, that can relate to the underlying physical mechanisms, they are able to leverage on the prior expert domain knowledge, and that are easily interpretable.
+
+In order for latent variables to be interpretable in this setting, they will often need to be categorical or binary. For instance indicating the presence or absence of disease, or disruption of a cellular pathway process.
+Latent variable models play an 
+That's why I would like to introduce you to the OrMachine. 
+The OrMachine is fully binary latent variable model, that is based on Boolen Matrix factorisatoin.
+
+#+END_NOTES
+** Probabilistic Generative Model
+#+REVEAL_HTML: <div class="column" style="float:left; width: 45%">
+#+ATTR_HTML: :width 90% :height 90%
+[[./calc_digit_intro.png]]
+#+REVEAL_HTML: </div>
+
+#+REVEAL_HTML: <div class="column" style="float:right; width: 55%">
+Notation
+- ${x_{nd}}$ -- observations
+- ${u_{ld}}$ -- factor matrix: global codes
+- ${z_{nl}}$ -- factor matrix: local latent variables
+- $\lambda \ge 0$ -- global noise parameter
+
+Definitions
+- Mapping $\{0,1\}$ to $\{-1,1\}$: $\tilde{x} = 2x-1$
+- Logistic sigmoid: $\sigma(x) = (1+\exp[-x])^{-1}$
+#+REVEAL_HTML: </div>
+
+#+REVEAL_HTML: <div class="column" style="float:right; width: 100%">
+#+ATTR_REVEAL: :frag appear
+$$  p(x_{nd}|\mathbf{u}_d,\mathbf{z}_n,\lambda)= \begin{cases} \sigma [ \lambda];\;&\text{if}\;\color{darkgreen}{x_{nd}=\min(1,\mathbf{z}_n^T\mathbf{u}_d)}\;\; \\ 1-\sigma [ \lambda]=\sigma[-\lambda];\;&\text{if}\;x_{nd}\neq\min(1,\mathbf{z}_n^T\mathbf{u}_d)    \end{cases}
+$$
+#+ATTR_REVEAL: :frag appear
+$$\;\;\;\; = \sigma\left[\lambda \tilde{x}_{nd} \left(1-2\color{brown}{\prod\limits_{l}(1-z_{nl}u_{ld})}\right) \right]$$
+#+REVEAL_HTML: </div>
+#+BEGIN_NOTES
+- This is a probabilistic model for *Boolean matrix factorisation*.
+- Likelihood can be efficiently evaluated
+- Example topic models
+#+END_NOTES
+** Unsupervised learning
+# #+REVEAL_HTML: <div class="column" style="float:left; width: 45%">
+# #+ATTR_HTML: :width 100% :height 100%
+# [[./genomics.jpg]]
+# #+REVEAL_HTML: </div>
+
+# #+REVEAL_HTML: <div class="column" style="float:left; width: 10%">
+# $$ $$ 
+# $$ $$
+# $$ $$
+# $$ $$
+# $\color{red}{\mathbf{\longrightarrow}}$
+# #+REVEAL_HTML: </div>
+
+# #+REVEAL_HTML: <div class="column" style="float:left; width: 45%">
+# #+ATTR_HTML: :width 82% :height 82%
+# [[./kaplan_meier.png]]
+# #+REVEAL_HTML: </div>
+
+#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
+#+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="1"><p>
+@@html:<div align="left">@@ @@html:&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;&nbsp;&nbsp;@@ Key requirements @@html:</div>@@
+  #+ATTR_REVEAL: :frag (appear appear appear appear) :frag_idx (1 2 3 4)
+  - ... *interpretable*
+  - ... relate to the physical *data-generating mechanism*.
+  - ... ability to utilise *prior expert knowledge*.
+  - ... *scalable*
+#+REVEAL_HTML: </div>
+
+#+BEGIN_NOTES
+- Joint work with CY, MT and CH.
+- Started out my PhD wanting to develop model for unsupervised learning
+- The goal is to undertstand processes that underly high dimensional heterogeneous datasets
+- Focus on Genomics, where the abundance of molecular data needs to be translated into understanding of disease and better healthcare
+- Key requirements
+ 
+When I started my PhD research about 1 1/2 years ago, I was interested in unsupervised learning. I wanted to develope latent variable models and inference to work with large, complicated, noisy data sets. In particular, models that can help to build an intuition about the data generating processes and that enable us to derive scientific insights from the data. This is said mostly with Genomics data in mind, but applies in general.
+
+Over the course of this work I identified four requirements that such a needs to meet.
+ - interpretability: intuitive understaing for latent variables, need to quantify uncertainty
+ - physical mechanism: depends on the application. observations and meaningful latent properties are usually digital, e.g. presence/absence of disease or mutation; customer buying or not buying a product, the colour in a region of an image etc.
+ - prior knowledge: especially in biology we already know a lot, not everything needs to be inferred from the data.
+ - scalability
+
+So we developed a probabiistic model for Boolean matrix factorisation, that we call the OrMachine
+
+
+#+END_NOTES
+
+
+
+
+
+
+
+
+
+** Setup: Combine Layers of OrMachines
+#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
+[[./arc.png]]
+#+REVEAL_HTML: </div>
