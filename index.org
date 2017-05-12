@@ -33,8 +33,10 @@
 
 
 * Single Cell Gene Expression
+#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
 #+ATTR_HTML: :width 80% :height 80%
 [[./mouse_data.png]]
+#+REVEAL_HTML: </div>
 #+BEGIN_NOTES
 Requirements
 - interpretable: intuition for latent variables, quantification of uncertainty
@@ -109,7 +111,7 @@ Computational shortcuts
 #+REVEAL_HTML: </div>
 
 #+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="3"><p>
-*Dispersion Parameter to maximise Likelihood*
+*Dispersion parameter set to maximise likelihood*
 #+REVEAL_HTML: <span class="fragment (appear)" data-fragment-index="3"><p>
 $$ \lambda_{\text{MLE}} = \text{logit}\left[ \text{reconstruction accuracy} \right] $$
 # $$ \sigma(\lambda)_{\text{MLE}} = \frac{\text{No. of correctly reconstructed data points}}{\text{No. of data points}} $$
@@ -151,7 +153,7 @@ Metropolised Gibbs sampler @@html:<br>@@
 #+ATTR_HTML: :width 75% :height %0%
 [[./factorsiation_performance_new2.png]]
 
-[Message Passing arXiv: 1509.08535]
+[Message Passing: Ravanbakshs et al., ICML 2016]
 #+REVEAL_HTML: </div>
 
 #+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
@@ -391,7 +393,39 @@ $\mathbf{\otimes}$
 # - *Missing data* and *prior knowledge* can easily be integrated.
   #  learns compositional feautres
 #+REVEAL_HTML: </div>
+** Acknowledgements
 
+*Supervision*
+
+#+REVEAL_HTML: <div class="column" style="float:left; width: 33%">
+#+ATTR_HTML: :width 45% :height 45%
+[[./chris.jpg]] @@html:<br>@@
+Chris Yau
+#+REVEAL_HTML: </div>
+
+#+REVEAL_HTML: <div class="column" style="float:left; width: 33%">
+#+ATTR_HTML: :width 45% :height 45%
+[[./michalis.png]] @@html:<br>@@
+Michalis Titsias
+#+REVEAL_HTML: </div>
+
+#+REVEAL_HTML: <div class="column" style="float:left; width: 33%">
+#+ATTR_HTML: :width 37% :height 37%
+[[./ch.jpg]] @@html:<br>@@
+Chris Holmes
+#+REVEAL_HTML: </div>
+
+#+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
+ *Funding*
+#+REVEAL_HTML: </div>
+#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+#+ATTR_HTML: :width 40% :height 50%
+[[./epsrc.png]]
+#+REVEAL_HTML: </div>
+#+REVEAL_HTML: <div class="column" style="float:left; width: 50%">
+#+ATTR_HTML: :width 40% :height 50%
+[[./roche.png]]
+#+REVEAL_HTML: </div>
 * Additional Material
 ** Deep noisy calculator digits
 #+REVEAL_HTML: <div class="column" style="float:left; width: 100%">
